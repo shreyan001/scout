@@ -2,7 +2,13 @@
   "manifest_version": 3,
   "name": "Scout - Web3 AI Agent",
   "version": "1.0.0",
-  "description": "Your Personalized Web3 AI Agent — See, Scan, Act. Instantly.",  "permissions": [
+  "description": "Your Personalized Web3 AI Agent — See, Scan, Act. Instantly.",
+  "icons": {
+    "16": "icons/icon16.svg",
+    "48": "icons/icon16.svg",
+    "128": "icons/icon16.svg"
+  },
+  "permissions": [
     "activeTab",
     "storage",
     "scripting",
@@ -28,7 +34,7 @@
   },
   "options_page": "options.html",  "web_accessible_resources": [
     {
-      "resources": ["injected.js", "scout-ui.css", "tesseract-core.wasm.js"],
+      "resources": ["injected.js", "scout-ui.css", "tesseract-core.wasm.js", "wallet-connect.html", "scout-wallet-popup.css"],
       "matches": ["<all_urls>"]
     }
   ]

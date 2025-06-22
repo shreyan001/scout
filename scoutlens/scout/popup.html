@@ -1,91 +1,137 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+    <me            <!-- Scout Actions Section -->
+            <section class="scout-actions-section">
+                <h3>Scout Actions</h3>
+                <div class="button-group">
+                    <button id="scanPageBtn" class="btn btn-primary">
+                        🔍 Scan & Analyze
+                    </button>
+                    <button id="ocrScanBtn" class="btn btn-secondary">
+                        📷 OCR Scan
+                    </button>
+                    <button id="tokenLookupBtn" class="btn btn-secondary">
+                        💰 Token Lookup
+                    </button>
+                </div>
+            </section>-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scout - Web3 AI Agent</title>
     <link rel="stylesheet" href="popup.css">
 </head>
-<body>
-    <div class="popup-container">        <header class="popup-header">
-            <h1>� Scout</h1>
-            <p class="version">Web3 AI Agent v1.0.0</p>
+<body>    <div class="popup-container">
+        <header class="popup-header">
+            <h1>🔍 Scout</h1>
+            <p class="tagline">Your Web3 AI Agent</p>
         </header>
 
-        <main class="popup-main">
-            <section class="status-section">
-                <div class="status-item">
-                    <span class="status-label">Status:</span>
-                    <span id="status" class="status-value">Loading...</span>
-                </div>
-                <div class="status-item">
-                    <span class="status-label">Current Tab:</span>
-                    <span id="currentTab" class="status-value">-</span>
+        <main class="popup-main">            <!-- Wallet Address Section -->
+            <section id="walletSection" class="wallet-section">
+                <div class="wallet-input-section">
+                    <h3>Wallet Address (Optional)</h3>
+                    <p class="wallet-description">Enter your wallet address for enhanced analysis features</p>
+                    
+                    <div class="wallet-input-group">
+                        <input 
+                            type="text" 
+                            id="walletAddressInput" 
+                            class="wallet-input" 
+                            placeholder="0x1234...abcd (optional)"
+                            maxlength="42"
+                        >
+                        <button id="saveAddressBtn" class="btn btn-secondary btn-small">
+                            💾 Save
+                        </button>
+                        <button id="clearAddressBtn" class="btn btn-outline btn-small hidden">
+                            🗑️ Clear
+                        </button>
+                    </div>
+                    
+                    <div id="walletStatus" class="wallet-status hidden">
+                        <div class="wallet-stored">
+                            <span class="wallet-icon">✅</span>
+                            <span id="storedAddress" class="stored-address">0x...</span>
+                            <span class="wallet-label">Stored Address</span>
+                        </div>
+                    </div>
+                    
+                    <div class="wallet-help">
+                        <p><small>💡 You can use Scout without a wallet address, but some features may be limited.</small></p>
+                    </div>
                 </div>
             </section>
 
-            <section class="actions-section">
-                <h3>Quick Actions</h3>
+            <!-- Scout Actions Section -->
+            <section class="scout-actions-section">
+                <h3>Scout Actions</h3>
                 <div class="button-group">
-                    <button id="analyzePageBtn" class="btn btn-primary">
-                        📊 Analyze Page
+                    <button id="scanPageBtn" class="btn btn-primary" disabled>
+                        � Scan & Analyze
                     </button>
-                    <button id="highlightLinksBtn" class="btn btn-secondary">
-                        🔗 Highlight Links
+                    <button id="ocrScanBtn" class="btn btn-secondary" disabled>
+                        � OCR Scan
                     </button>
-                    <button id="scrollToTopBtn" class="btn btn-secondary">
-                        ⬆️ Scroll to Top
+                    <button id="tokenLookupBtn" class="btn btn-secondary" disabled>
+                        💰 Token Lookup
                     </button>
                 </div>
             </section>
 
-            <section class="tools-section">
-                <h3>Developer Tools</h3>
-                <div class="tool-item">
-                    <label for="cssInput">Inject CSS:</label>
-                    <textarea id="cssInput" placeholder="Enter CSS code..." rows="3"></textarea>
-                    <button id="injectCssBtn" class="btn btn-small">Apply CSS</button>
-                </div>
-                
-                <div class="tool-item">
-                    <label for="selectorInput">Element Selector:</label>
-                    <input type="text" id="selectorInput" placeholder="e.g., .my-class, #my-id">
-                    <button id="highlightElementBtn" class="btn btn-small">Highlight</button>
+            <!-- Scan Results Section -->
+            <section id="scanResults" class="scan-results-section hidden">
+                <h3>Scan Results</h3>
+                <div id="resultsContainer" class="results-container">
+                    <!-- Results will be populated here -->
                 </div>
             </section>
 
-            <section class="settings-section">
-                <h3>Settings</h3>
-                <div class="setting-item">
-                    <label class="switch">
-                        <input type="checkbox" id="enabledToggle" checked>
-                        <span class="slider"></span>
-                    </label>
-                    <span>Extension Enabled</span>
+            <!-- Token Analysis Section -->
+            <section id="tokenAnalysis" class="token-analysis-section hidden">
+                <h3>Token Analysis</h3>
+                <div id="tokenData" class="token-data">
+                    <!-- Token data will be populated here -->
                 </div>
-                <div class="setting-item">
-                    <label class="switch">
-                        <input type="checkbox" id="notificationsToggle" checked>
-                        <span class="slider"></span>
-                    </label>
-                    <span>Notifications</span>
+            </section>            <!-- Quick Tools Section -->
+            <section class="quick-tools-section">
+                <h3>Quick Tools</h3>
+                <div class="tool-grid">
+                    <button id="highlightTokensBtn" class="tool-btn">
+                        🏷️ Highlight Tokens
+                    </button>
+                    <button id="extractAddressesBtn" class="tool-btn">
+                        📋 Extract Addresses
+                    </button>
+                    <button id="riskAnalysisBtn" class="tool-btn">
+                        ⚠️ Risk Analysis
+                    </button>
+                    <button id="priceAlertsBtn" class="tool-btn">
+                        🔔 Price Alerts
+                    </button>
                 </div>
             </section>
         </main>
 
         <footer class="popup-footer">
-            <button id="optionsBtn" class="btn btn-link">Options</button>
+            <div class="footer-status">
+                <span id="statusIndicator" class="status-indicator">●</span>
+                <span id="statusText" class="status-text">Ready</span>
+            </div>
             <div class="footer-links">
-                <a href="#" id="helpLink">Help</a>
-                <a href="#" id="feedbackLink">Feedback</a>
+                <button id="settingsBtn" class="btn-link">⚙️ Settings</button>
+                <button id="helpBtn" class="btn-link">❓ Help</button>
             </div>
         </footer>
     </div>
 
+    <!-- Loading Overlay -->
     <div id="loadingOverlay" class="loading-overlay hidden">
         <div class="loading-spinner"></div>
-        <p>Processing...</p>
+        <p id="loadingText">Initializing Scout...</p>
     </div>
+
+    <!-- Toast Notifications -->
+    <div id="toastContainer" class="toast-container"></div>
 
     <script src="popup.js"></script>
 </body>

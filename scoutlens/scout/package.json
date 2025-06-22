@@ -1,28 +1,32 @@
 {
-  "name": "chrome-extension-starter",
+  "name": "scout-web3-agent",
   "version": "1.0.0",
-  "description": "A modern Chrome extension starter template with Manifest V3",
+  "description": "Scout - Your Personalized Web3 AI Agent. See, Scan, Act. Instantly.",
   "main": "background.js",
   "scripts": {
-    "dev": "echo 'Load the extension in Chrome at chrome://extensions/ with Developer mode enabled'",
-    "build": "echo 'Building extension...' && npm run validate",
+    "dev": "echo 'Load Scout extension in Chrome at chrome://extensions/ with Developer mode enabled'",
+    "build": "echo 'Building Scout extension...' && npm run validate",
     "validate": "node scripts/validate.js",
     "lint": "eslint *.js",
     "format": "prettier --write *.js *.html *.css *.json",
     "zip": "node scripts/zip.js",
-    "test": "echo 'Run tests for the extension'",
-    "clean": "rimraf dist/ *.zip"
+    "test": "echo 'Run tests for Scout extension'",
+    "clean": "rimraf dist/ *.zip",
+    "load": "echo 'Open chrome://extensions/ and load the scout folder as unpacked extension'"
   },
   "keywords": [
+    "web3",
+    "ai-agent",
     "chrome-extension",
-    "manifest-v3",
-    "javascript",
-    "web-extension",
-    "browser-extension",
-    "template",
-    "starter"
+    "ethereum",
+    "metamask",
+    "defi",
+    "tokens",
+    "ocr",
+    "crypto",
+    "manifest-v3"
   ],
-  "author": "Your Name <your.email@example.com>",
+  "author": "Scout Team",
   "license": "MIT",
   "devDependencies": {
     "eslint": "^8.0.0",

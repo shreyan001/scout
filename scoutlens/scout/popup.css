@@ -43,6 +43,12 @@ body {
     opacity: 0.9;
 }
 
+.popup-header .tagline {
+    font-size: 12px;
+    opacity: 0.9;
+    margin-top: 4px;
+}
+
 /* Main Content */
 .popup-main {
     flex: 1;
@@ -355,6 +361,246 @@ input:checked + .slider:before {
 
 .popup-main::-webkit-scrollbar-thumb:hover {
     background: #a8a8a8;
+}
+
+/* Scout-specific styles */
+/* Wallet Section */
+.wallet-section {
+    margin-bottom: 20px;
+}
+
+.wallet-connected {
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    border-radius: 12px;
+    padding: 16px;
+    border: 1px solid #0ea5e9;
+}
+
+.wallet-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.wallet-avatar img {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+}
+
+.wallet-details {
+    flex: 1;
+}
+
+.wallet-address {
+    font-family: 'Monaco', 'Menlo', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    color: #0369a1;
+    margin-bottom: 2px;
+}
+
+.wallet-balance {
+    font-size: 11px;
+    color: #64748b;
+}
+
+.btn-icon {
+    background: transparent;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.btn-icon:hover {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.wallet-disconnected {
+    text-align: center;
+    padding: 24px 16px;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 2px dashed #cbd5e1;
+}
+
+.wallet-prompt h3 {
+    font-size: 16px;
+    color: #334155;
+    margin-bottom: 8px;
+}
+
+.wallet-prompt p {
+    font-size: 13px;
+    color: #64748b;
+    margin-bottom: 16px;
+}
+
+/* Scout Actions Section */
+.scout-actions-section {
+    margin-bottom: 16px;
+}
+
+/* Quick Tools Section */
+.quick-tools-section {
+    margin-bottom: 16px;
+}
+
+.tool-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.tool-btn {
+    padding: 12px 8px;
+    font-size: 11px;
+    text-align: center;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.tool-btn:hover:not(:disabled) {
+    background: #e2e8f0;
+    transform: translateY(-1px);
+}
+
+.tool-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Scan Results Section */
+.scan-results-section {
+    margin-bottom: 16px;
+}
+
+.results-container {
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 12px;
+    border: 1px solid #e2e8f0;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+    font-size: 12px;
+}
+
+/* Token Analysis Section */
+.token-analysis-section {
+    margin-bottom: 16px;
+}
+
+.token-data {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border-radius: 8px;
+    padding: 12px;
+    border: 1px solid #f59e0b;
+}
+
+/* Footer */
+.footer-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.status-indicator {
+    font-size: 8px;
+    color: #10b981;
+}
+
+.status-text {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.btn-link {
+    background: transparent;
+    border: none;
+    color: #4285f4;
+    font-size: 12px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: background-color 0.2s;
+}
+
+.btn-link:hover {
+    background: rgba(66, 133, 244, 0.1);
+}
+
+/* Toast Container */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.toast {
+    background: #333;
+    color: white;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    max-width: 300px;
+    animation: slideInToast 0.3s ease-out;
+}
+
+.toast.success {
+    background: #10b981;
+}
+
+.toast.error {
+    background: #ef4444;
+}
+
+.toast.warning {
+    background: #f59e0b;
+}
+
+@keyframes slideInToast {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Hidden class */
+.hidden {
+    display: none !important;
+}
+
+/* Disabled button states */
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+button:disabled:hover {
+    transform: none !important;
+    box-shadow: none !important;
 }
 
 /* Responsive adjustments */

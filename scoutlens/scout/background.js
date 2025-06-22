@@ -59,31 +59,17 @@ chrome.runtime.onInstalled.addListener((details) => {
 // Handle context menu clicks
 chrome.contextMenus.onClicked.addListener((info, tab) => {
   if (info.menuItemId === 'scoutScan') {
-    // Execute Scout token scanning
+    // Execute Scout scan on the current page
     chrome.scripting.executeScript({
       target: { tabId: tab.id },
       function: () => {
-        // Trigger Scout scanning functionality
-        window.postMessage({ type: 'SCOUT_SCAN_REQUEST' }, '*');
+        // Trigger Scout scan from page context
+        window.postMessage({ 
+          type: 'SCOUT_CONTEXT_SCAN',
+          selectedText: window.getSelection().toString()
+        }, '*');
       }
     });
-  }
-  
-  if (info.menuItemId === 'scoutAnalyze') {
-    const selectedText = info.selectionText;
-    if (selectedText) {
-      // Analyze the selected text for crypto addresses/tokens
-      chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        function: (text) => {
-          window.postMessage({ 
-            type: 'SCOUT_ANALYZE_REQUEST', 
-            data: { text: text }
-          }, '*');
-        },
-        args: [selectedText]
-      });
-    }
   }
 });
 
@@ -252,63 +238,282 @@ async function getWalletBalance(address, chainId) {
   }
 }
 
-// Listen for messages from content scripts and popup
+// Open wallet connection popup window
+async function openWalletPopup(tabId) {
+  try {
+    console.log('Scout: Opening wallet connection popup');
+    
+    // Get the current tab to position the popup appropriately
+    let currentTab;
+    if (tabId) {
+      currentTab = await chrome.tabs.get(tabId);
+    } else {
+      [currentTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    }
+    
+    if (!currentTab) {
+      throw new Error('No active tab found');
+    }
+    
+    // Get the wallet-connect.html URL from the extension
+    const walletConnectUrl = chrome.runtime.getURL('wallet-connect.html');
+    
+    // Create popup window with appropriate size and position
+    const popup = await chrome.windows.create({
+      url: walletConnectUrl,
+      type: 'popup',
+      width: 450,
+      height: 600,
+      left: Math.round((screen.width - 450) / 2),
+      top: Math.round((screen.height - 600) / 2),
+      focused: true
+    });
+    
+    console.log('Scout: Wallet popup created:', popup.id);
+    
+    // Store popup window ID for later reference
+    await chrome.storage.local.set({
+      walletPopupWindowId: popup.id
+    });
+    
+    return {
+      windowId: popup.id,
+      url: walletConnectUrl
+    };
+    
+  } catch (error) {
+    console.error('Scout: Error opening wallet popup:', error);
+    throw error;
+  }
+}
+
+// Handle messages from popup and content scripts
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  console.log('Scout: Message received in service worker:', message);
+  console.log('Scout message received:', message);
   
   switch (message.type) {
-    case 'SCOUT_CONNECT_WALLET':
-      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        if (tabs[0]) {
-          connectWallet(tabs[0].id)
-            .then(result => sendResponse({ success: true, result }))
-            .catch(error => sendResponse({ success: false, error: error.message }));
-        }
-      });
-      return true; // Keep message channel open for async response
-      
-    case 'SCOUT_DISCONNECT_WALLET':
-      disconnectWallet()
-        .then(result => sendResponse({ success: true }))
+    case 'OPEN_WALLET_POPUP':
+      openWalletPopup(sender.tab?.id)
+        .then(result => sendResponse({ success: true, result }))
         .catch(error => sendResponse({ success: false, error: error.message }));
       return true;
       
-    case 'SCOUT_GET_WALLET_STATE':
-      sendResponse({ success: true, walletState: scoutWalletState });
+    case 'GET_WALLET_STATE':
+      sendResponse(scoutWalletState);
       break;
       
-    case 'SCOUT_REFRESH_BALANCE':
-      if (scoutWalletState.connected && scoutWalletState.account) {
-        getWalletBalance(scoutWalletState.account, scoutWalletState.chainId)
-          .then(balance => {
-            scoutWalletState.balance = balance;
-            chrome.storage.local.set({ scoutWalletState });
-            sendResponse({ success: true, balance });
-          })
-          .catch(error => sendResponse({ success: false, error: error.message }));
-      } else {
-        sendResponse({ success: false, error: 'Wallet not connected' });
-      }
+    case 'CONNECT_WALLET':
+      connectWallet(sender.tab?.id)
+        .then(result => sendResponse({ success: true, result }))
+        .catch(error => sendResponse({ success: false, error: error.message }));
+      return true; // Keep message channel open for async response
+      
+    case 'DISCONNECT_WALLET':
+      disconnectWallet()
+        .then(() => sendResponse({ success: true }))
+        .catch(error => sendResponse({ success: false, error: error.message }));
       return true;
       
-    case 'SCOUT_TOKEN_SCAN':
-      // Handle token scanning requests
-      handleTokenScan(message.data, sender.tab.id)
+    case 'TOKEN_LOOKUP':
+      handleTokenLookup(message.walletAddress)
+        .then(result => sendResponse({ success: true, data: result }))
+        .catch(error => sendResponse({ success: false, error: error.message }));
+      return true;
+      
+    case 'SCAN_RESULTS':
+      handleScanResults(message.data, sender.tab?.id)
         .then(result => sendResponse({ success: true, result }))
         .catch(error => sendResponse({ success: false, error: error.message }));
       return true;
       
-    case 'SCOUT_ADDRESS_ANALYSIS':
-      // Handle address analysis requests
-      handleAddressAnalysis(message.data, sender.tab.id)
+    case 'EXECUTE_WALLET_REQUEST':
+      executeWalletRequest(message.method, message.params, sender.tab?.id)
         .then(result => sendResponse({ success: true, result }))
         .catch(error => sendResponse({ success: false, error: error.message }));
       return true;
+      
+    // New content script message handlers
+    case 'WALLET_STATUS_UPDATE':
+      handleWalletStatusUpdate(message.data, sender.tab?.id);
+      sendResponse({ success: true });
+      break;
+      
+    case 'WALLET_ERROR':
+      handleWalletError(message.data, sender.tab?.id);
+      sendResponse({ success: true });
+      break;
+      
+    case 'SCOUT_CONTENT_LOADED':
+      handleContentLoaded(message.data, sender.tab?.id);
+      sendResponse({ success: true });
+      break;
+      
+    case 'CONTENT_CHANGED':
+      handleContentChanged(message.data, sender.tab?.id);
+      sendResponse({ success: true });
+      break;
+      
+    case 'PAGE_METRICS':
+      handlePageMetrics(message.data, sender.tab?.id);
+      sendResponse({ success: true });
+      break;
+      
+    case 'PAGE_DATA':
+      handlePageData(message.data, sender.tab?.id);
+      sendResponse({ success: true });
+      break;
+        case 'SCROLL_UPDATE':
+      handleScrollUpdate(message.data, sender.tab?.id);
+      sendResponse({ success: true });
+      break;
+        // Wallet popup messages (from in-page popup)
+    case 'WALLET_CONNECTED':
+      handleWalletConnectedFromInPage(message.data, sender.tab?.id);
+      sendResponse({ success: true });
+      break;
+      
+    case 'WALLET_ERROR':
+      handleWalletErrorFromInPage(message.data, sender.tab?.id);
+      sendResponse({ success: true });
+      break;
+      
+    case 'WALLET_POPUP_CLOSED':
+      handleWalletPopupClosedFromInPage(message.data, sender.tab?.id);
+      sendResponse({ success: true });
+      break;
       
     default:
       sendResponse({ success: false, error: 'Unknown message type' });
   }
 });
+
+// New content script message handlers
+async function handleWalletStatusUpdate(data, tabId) {
+  console.log('Scout: Wallet status update:', data);
+  
+  // Update wallet state based on injected script feedback
+  if (data.connected && data.address) {
+    scoutWalletState.connected = true;
+    scoutWalletState.account = data.address;
+    scoutWalletState.chainId = data.chainId;
+    scoutWalletState.networkName = NETWORKS[data.chainId] || 'Unknown Network';
+    
+    // Store updated wallet state
+    await chrome.storage.local.set({ 
+      scoutWalletState: scoutWalletState,
+      walletConnected: true 
+    });
+    
+    // Trigger portfolio update
+    setTimeout(() => handlePortfolioUpdate(), 1000);
+    
+  } else if (!data.connected) {
+    // Wallet disconnected
+    await disconnectWallet();
+  }
+}
+
+function handleWalletError(data, tabId) {
+  console.error('Scout: Wallet error from content script:', data);
+  
+  // Show error notification
+  chrome.notifications.create({
+    type: 'basic',
+    iconUrl: 'icons/icon48.png',
+    title: 'Scout - Wallet Error',
+    message: data.message || 'Wallet connection error'
+  });
+}
+
+function handleContentLoaded(data, tabId) {
+  console.log('Scout: Content script loaded on tab:', tabId, data);
+  
+  // Store page info
+  chrome.storage.local.set({
+    [`pageInfo_${tabId}`]: {
+      ...data.pageInfo,
+      timestamp: data.timestamp
+    }
+  });
+  
+  // Check if this is a Web3 site
+  if (data.pageInfo.hasMetaMask) {
+    console.log('Scout: Web3 site detected');
+    
+    // Auto-scan if enabled
+    chrome.storage.sync.get(['scanSettings'], (result) => {
+      if (result.scanSettings?.autoScan) {
+        setTimeout(() => {
+          chrome.tabs.sendMessage(tabId, {
+            type: 'SCAN_PAGE',
+            data: { scanType: 'tokens', includeImages: true }
+          });
+        }, 2000);
+      }
+    });
+  }
+}
+
+function handleContentChanged(data, tabId) {
+  console.log('Scout: Content changed on tab:', tabId, data);
+  
+  // If token content changed, trigger a scan
+  if (data.type === 'tokenContent') {
+    chrome.storage.sync.get(['scanSettings'], (result) => {
+      if (result.scanSettings?.autoScan) {
+        setTimeout(() => {
+          chrome.tabs.sendMessage(tabId, {
+            type: 'SCAN_PAGE',
+            data: { scanType: 'tokens' }
+          });
+        }, 1000);
+      }
+    });
+  }
+}
+
+function handlePageMetrics(data, tabId) {
+  console.log('Scout: Page metrics:', data);
+  
+  // Store metrics for analytics
+  chrome.storage.local.set({
+    [`metrics_${tabId}_${Date.now()}`]: data
+  });
+  
+  // Show notification for Web3 sites with tokens
+  if (data.hasWeb3 && data.tokensDetected > 0) {
+    chrome.notifications.create({
+      type: 'basic',
+      iconUrl: 'icons/icon48.png',
+      title: 'Scout - Tokens Detected',
+      message: `Found ${data.tokensDetected} tokens and ${data.addressesDetected} addresses`
+    });
+  }
+}
+
+function handlePageData(data, tabId) {
+  console.log('Scout: Page data received:', data);
+  
+  // Process any custom data sent from pages
+  // This could be used for dApp integrations
+}
+
+function handleScrollUpdate(data, tabId) {
+  // Track scroll position for lazy loading OCR
+  const scrollPercentage = (data.scrollY / (data.documentHeight - data.viewportHeight)) * 100;
+  
+  // Trigger OCR scan on new content areas
+  if (scrollPercentage > 0 && scrollPercentage % 25 < 5) { // Every 25% scroll
+    chrome.storage.sync.get(['scanSettings'], (result) => {
+      if (result.scanSettings?.ocrEnabled) {
+        chrome.tabs.sendMessage(tabId, {
+          type: 'SCAN_OCR',
+          data: { region: 'viewport' }
+        });
+      }
+    });
+  }
+}
 
 // Token scanning functionality
 async function handleTokenScan(data, tabId) {
@@ -360,42 +565,136 @@ async function handleAddressAnalysis(data, tabId) {
 
 // Load wallet state on startup
 chrome.runtime.onStartup.addListener(async () => {
-  try {
-    const stored = await chrome.storage.local.get('scoutWalletState');
-    if (stored.scoutWalletState) {
-      scoutWalletState = stored.scoutWalletState;
-      console.log('Scout: Loaded wallet state from storage');
-    }
-  } catch (error) {
-    console.error('Scout: Error loading wallet state:', error);
-  }
+  console.log('Scout extension started');
+  await loadStoredWalletState();
 });
 
-// Handle tab updates for wallet state refresh
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (changeInfo.status === 'complete' && tab.url && scoutWalletState.connected) {
-    // Optionally refresh wallet state when navigating to new pages
-    console.log('Scout: Tab updated, wallet connected');
+// Load stored wallet state
+async function loadStoredWalletState() {
+  try {
+    const stored = await chrome.storage.local.get('walletState');
+    if (stored.walletState && stored.walletState.connected) {
+      scoutWalletState = stored.walletState;
+      console.log('Scout wallet state restored:', scoutWalletState);
+    }
+  } catch (error) {
+    console.error('Error loading wallet state:', error);
+  }
+}
+
+// Handle tab updates for auto-scanning
+chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+  if (changeInfo.status === 'complete' && tab.url) {
+    console.log('Scout: Tab updated:', tab.url);
+    
+    try {
+      // Check if auto-scan is enabled
+      const settings = await chrome.storage.sync.get('scanSettings');
+      if (settings.scanSettings?.autoScan && scoutWalletState.connected) {
+        // Auto-scan for Web3 content after a delay
+        setTimeout(() => {
+          chrome.tabs.sendMessage(tabId, { 
+            type: 'SCOUT_AUTO_SCAN',
+            url: tab.url 
+          }).catch(() => {
+            // Ignore errors if content script not ready
+          });
+        }, 2000);
+      }
+    } catch (error) {
+      console.error('Error in tab update handler:', error);
+    }
   }
 });
 
 // Handle alarms for periodic tasks
 chrome.alarms.onAlarm.addListener((alarm) => {
-  console.log('Scout: Alarm triggered:', alarm.name);
+  console.log('Scout alarm triggered:', alarm.name);
   
-  if (alarm.name === 'refreshWalletData' && scoutWalletState.connected) {
-    // Refresh wallet data periodically
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (tabs[0] && scoutWalletState.account) {
-        getWalletBalance(scoutWalletState.account, scoutWalletState.chainId)
-          .catch(error => console.error('Scout: Auto-refresh error:', error));
-      }
-    });
+  switch (alarm.name) {
+    case 'priceCheck':
+      handlePriceCheck();
+      break;
+    case 'portfolioUpdate':
+      handlePortfolioUpdate();
+      break;
+    case 'riskAssessment':
+      handleRiskAssessment();
+      break;
   }
 });
 
-// Set up periodic wallet data refresh
-chrome.alarms.create('refreshWalletData', { periodInMinutes: 5 });
+// Set up periodic alarms
+chrome.alarms.create('portfolioUpdate', { periodInMinutes: 15 });
+chrome.alarms.create('priceCheck', { periodInMinutes: 5 });
+chrome.alarms.create('riskAssessment', { periodInMinutes: 30 });
+
+// Periodic task handlers
+async function handlePriceCheck() {
+  if (!scoutWalletState.connected) return;
+  
+  try {
+    console.log('Scout: Performing periodic price check');
+    // TODO: Implement price checking with Nodit MCP
+  } catch (error) {
+    console.error('Price check error:', error);
+  }
+}
+
+async function handlePortfolioUpdate() {
+  if (!scoutWalletState.connected) return;
+  
+  try {
+    console.log('Scout: Updating portfolio data');
+    // TODO: Implement portfolio update with Nodit MCP
+  } catch (error) {
+    console.error('Portfolio update error:', error);
+  }
+}
+
+async function handleRiskAssessment() {
+  if (!scoutWalletState.connected) return;
+  
+  try {
+    console.log('Scout: Performing risk assessment');
+    // TODO: Implement risk assessment
+  } catch (error) {
+    console.error('Risk assessment error:', error);
+  }
+}
+
+// Network change detection
+chrome.webNavigation.onCommitted.addListener(async (details) => {
+  if (details.frameId === 0) { // Main frame only
+    try {
+      // Check if wallet network changed
+      if (scoutWalletState.connected) {
+        setTimeout(async () => {
+          try {
+            const currentChainId = await executeWalletRequest('eth_chainId', [], details.tabId);
+            if (currentChainId !== scoutWalletState.chainId) {
+              scoutWalletState.chainId = currentChainId;
+              scoutWalletState.networkName = NETWORKS[currentChainId] || 'Unknown Network';
+              await chrome.storage.local.set({ walletState: scoutWalletState });
+              
+              // Notify about network change
+              chrome.notifications.create({
+                type: 'basic',
+                iconUrl: 'icons/icon48.png',
+                title: 'Scout: Network Changed',
+                message: `Switched to ${scoutWalletState.networkName}`
+              });
+            }
+          } catch (error) {
+            // Ignore network check errors
+          }
+        }, 1000);
+      }
+    } catch (error) {
+      console.error('Error in navigation handler:', error);
+    }
+  }
+});
 
 // Error handling
 self.addEventListener('error', (event) => {
@@ -405,3 +704,75 @@ self.addEventListener('error', (event) => {
 self.addEventListener('unhandledrejection', (event) => {
   console.error('Scout unhandled promise rejection:', event.reason);
 });
+
+// Initialize extension on startup
+loadStoredWalletState();
+
+// In-page wallet popup message handlers
+async function handleWalletConnectedFromInPage(data, tabId) {
+  console.log('Scout: Wallet connected from in-page popup:', data);
+  
+  // Update wallet state
+  scoutWalletState = {
+    connected: true,
+    account: data.account,
+    chainId: data.chainId,
+    balance: null, // Will be fetched later
+    provider: data.provider || 'MetaMask',
+    networkName: NETWORKS[data.chainId] || 'Unknown Network'
+  };
+  
+  // Store wallet state
+  await chrome.storage.local.set({ 
+    scoutWalletState: scoutWalletState,
+    walletConnected: true 
+  });
+  
+  // Show success notification
+  chrome.notifications.create({
+    type: 'basic',
+    iconUrl: 'icons/icon16.svg',
+    title: 'Scout - Wallet Connected',
+    message: `Connected to ${scoutWalletState.networkName}`
+  });
+  
+  console.log('Scout: In-page wallet connection completed successfully');
+}
+
+function handleWalletErrorFromInPage(data, tabId) {
+  console.error('Scout: Wallet error from in-page popup:', data);
+  
+  // Show error notification
+  chrome.notifications.create({
+    type: 'basic',
+    iconUrl: 'icons/icon16.svg',
+    title: 'Scout - Wallet Error',
+    message: data.error || 'Wallet connection failed'
+  });
+}
+
+function handleWalletPopupClosedFromInPage(data, tabId) {
+  console.log('Scout: In-page wallet popup closed:', data);
+  
+  if (data.userClosed) {
+    console.log('Wallet popup closed by user');
+  }
+}
+
+function handleWalletErrorFromPopup(data) {
+  console.error('Scout: Wallet error from popup:', data);
+    // Show error notification
+  chrome.notifications.create({
+    type: 'basic',
+    iconUrl: 'icons/icon16.svg',
+    title: 'Scout - Wallet Error',
+    message: data.error || 'Wallet connection failed'
+  });
+}
+
+async function handleWalletPopupClosed() {
+  console.log('Scout: Wallet popup closed');
+  
+  // Clean up stored popup window ID
+  await chrome.storage.local.remove(['walletPopupWindowId']);
+}
