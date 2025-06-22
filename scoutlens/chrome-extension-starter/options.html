@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chrome Extension Starter - Options</title>
+    <link rel="stylesheet" href="options.css">
+</head>
+<body>
+    <div class="options-container">
+        <header class="options-header">
+            <h1>🚀 Extension Options</h1>
+            <p>Configure your Chrome Extension Starter settings</p>
+        </header>
+
+        <main class="options-main">
+            <div class="settings-grid">
+                <!-- General Settings -->
+                <section class="settings-section">
+                    <h2>General Settings</h2>
+                    
+                    <div class="setting-group">
+                        <div class="setting-item">
+                            <label class="setting-label">
+                                <input type="checkbox" id="extensionEnabled" checked>
+                                <span class="checkmark"></span>
+                                Enable Extension
+                            </label>
+                            <p class="setting-description">Turn the extension on or off globally</p>
+                        </div>
+
+                        <div class="setting-item">
+                            <label class="setting-label">
+                                <input type="checkbox" id="autoAnalyze" checked>
+                                <span class="checkmark"></span>
+                                Auto-analyze Pages
+                            </label>
+                            <p class="setting-description">Automatically analyze pages when they load</p>
+                        </div>
+
+                        <div class="setting-item">
+                            <label class="setting-label">
+                                <input type="checkbox" id="showIndicator" checked>
+                                <span class="checkmark"></span>
+                                Show Page Indicator
+                            </label>
+                            <p class="setting-description">Display extension indicator on web pages</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Notification Settings -->
+                <section class="settings-section">
+                    <h2>Notifications</h2>
+                    
+                    <div class="setting-group">
+                        <div class="setting-item">
+                            <label class="setting-label">
+                                <input type="checkbox" id="enableNotifications" checked>
+                                <span class="checkmark"></span>
+                                Enable Notifications
+                            </label>
+                            <p class="setting-description">Show notifications for extension events</p>
+                        </div>
+
+                        <div class="setting-item">
+                            <label class="setting-label">
+                                <input type="checkbox" id="soundNotifications">
+                                <span class="checkmark"></span>
+                                Sound Notifications
+                            </label>
+                            <p class="setting-description">Play sound with notifications</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Appearance Settings -->
+                <section class="settings-section">
+                    <h2>Appearance</h2>
+                    
+                    <div class="setting-group">
+                        <div class="setting-item">
+                            <label class="setting-label-select">
+                                Theme:
+                                <select id="themeSelect">
+                                    <option value="light">Light</option>
+                                    <option value="dark">Dark</option>
+                                    <option value="auto">Auto (System)</option>
+                                </select>
+                            </label>
+                            <p class="setting-description">Choose your preferred theme</p>
+                        </div>
+
+                        <div class="setting-item">
+                            <label class="setting-label-select">
+                                Popup Size:
+                                <select id="popupSizeSelect">
+                                    <option value="small">Small</option>
+                                    <option value="medium" selected>Medium</option>
+                                    <option value="large">Large</option>
+                                </select>
+                            </label>
+                            <p class="setting-description">Set the popup window size</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Advanced Settings -->
+                <section class="settings-section">
+                    <h2>Advanced</h2>
+                    
+                    <div class="setting-group">
+                        <div class="setting-item">
+                            <label class="setting-label">
+                                <input type="checkbox" id="debugMode">
+                                <span class="checkmark"></span>
+                                Debug Mode
+                            </label>
+                            <p class="setting-description">Enable debug logging in console</p>
+                        </div>
+
+                        <div class="setting-item">
+                            <label class="setting-label-input">
+                                API Timeout (ms):
+                                <input type="number" id="apiTimeout" min="1000" max="30000" value="5000">
+                            </label>
+                            <p class="setting-description">Request timeout for API calls</p>
+                        </div>
+
+                        <div class="setting-item">
+                            <label class="setting-label-textarea">
+                                Custom CSS:
+                                <textarea id="customCSS" rows="4" placeholder="Enter custom CSS for content scripts..."></textarea>
+                            </label>
+                            <p class="setting-description">Add custom CSS that will be injected into pages</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Data Management -->
+                <section class="settings-section">
+                    <h2>Data Management</h2>
+                    
+                    <div class="setting-group">
+                        <div class="setting-item">
+                            <label class="setting-label-select">
+                                Data Retention:
+                                <select id="dataRetention">
+                                    <option value="7">7 days</option>
+                                    <option value="30" selected>30 days</option>
+                                    <option value="90">90 days</option>
+                                    <option value="365">1 year</option>
+                                    <option value="0">Forever</option>
+                                </select>
+                            </label>
+                            <p class="setting-description">How long to keep extension data</p>
+                        </div>
+
+                        <div class="setting-item action-item">
+                            <button id="exportDataBtn" class="btn btn-secondary">
+                                📤 Export Data
+                            </button>
+                            <button id="importDataBtn" class="btn btn-secondary">
+                                📥 Import Data
+                            </button>
+                            <input type="file" id="importFile" accept=".json" style="display: none;">
+                        </div>
+
+                        <div class="setting-item action-item danger-zone">
+                            <h3>⚠️ Danger Zone</h3>
+                            <button id="clearDataBtn" class="btn btn-danger">
+                                🗑️ Clear All Data
+                            </button>
+                            <button id="resetSettingsBtn" class="btn btn-danger">
+                                🔄 Reset to Defaults
+                            </button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <footer class="options-footer">
+            <div class="footer-actions">
+                <button id="saveBtn" class="btn btn-primary">💾 Save Settings</button>
+                <button id="cancelBtn" class="btn btn-secondary">❌ Cancel</button>
+            </div>
+            
+            <div class="footer-info">
+                <p>Chrome Extension Starter v1.0.0</p>
+                <div class="footer-links">
+                    <a href="#" id="docsLink">📚 Documentation</a>
+                    <a href="#" id="supportLink">💬 Support</a>
+                    <a href="#" id="githubLink">🐙 GitHub</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Status Toast -->
+    <div id="statusToast" class="status-toast hidden">
+        <div class="toast-content">
+            <span class="toast-icon">✅</span>
+            <span class="toast-message">Settings saved successfully!</span>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="modal hidden">
+        <div class="modal-content">
+            <h3 id="confirmTitle">Confirm Action</h3>
+            <p id="confirmMessage">Are you sure you want to perform this action?</p>
+            <div class="modal-actions">
+                <button id="confirmYes" class="btn btn-danger">Yes</button>
+                <button id="confirmNo" class="btn btn-secondary">No</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="options.js"></script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "Scout - Web3 AI Agent",
+  "version": "1.0.0",
+  "description": "Your Personalized Web3 AI Agent — See, Scan, Act. Instantly.",  "permissions": [
+    "activeTab",
+    "storage",
+    "scripting",
+    "contextMenus",
+    "notifications"
+  ],
+  "host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "css": ["content.css"]
+    }
+  ],  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Scout - Web3 AI Agent"
+  },
+  "options_page": "options.html",  "web_accessible_resources": [
+    {
+      "resources": ["injected.js", "scout-ui.css", "tesseract-core.wasm.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

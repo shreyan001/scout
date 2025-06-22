@@ -1,0 +1,47 @@
+{
+  "name": "chrome-extension-starter",
+  "version": "1.0.0",
+  "description": "A modern Chrome extension starter template with Manifest V3",
+  "main": "background.js",
+  "scripts": {
+    "dev": "echo 'Load the extension in Chrome at chrome://extensions/ with Developer mode enabled'",
+    "build": "echo 'Building extension...' && npm run validate",
+    "validate": "node scripts/validate.js",
+    "lint": "eslint *.js",
+    "format": "prettier --write *.js *.html *.css *.json",
+    "zip": "node scripts/zip.js",
+    "test": "echo 'Run tests for the extension'",
+    "clean": "rimraf dist/ *.zip"
+  },
+  "keywords": [
+    "chrome-extension",
+    "manifest-v3",
+    "javascript",
+    "web-extension",
+    "browser-extension",
+    "template",
+    "starter"
+  ],
+  "author": "Your Name <your.email@example.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^8.0.0",
+    "prettier": "^3.0.0",
+    "rimraf": "^5.0.0",
+    "archiver": "^6.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/chrome-extension-starter.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/chrome-extension-starter/issues"
+  },
+  "homepage": "https://github.com/your-username/chrome-extension-starter#readme",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "browserslist": [
+    "Chrome >= 88"
+  ]
+}

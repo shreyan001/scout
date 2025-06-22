@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scout - Web3 AI Agent</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+    <div class="popup-container">        <header class="popup-header">
+            <h1>� Scout</h1>
+            <p class="version">Web3 AI Agent v1.0.0</p>
+        </header>
+
+        <main class="popup-main">
+            <section class="status-section">
+                <div class="status-item">
+                    <span class="status-label">Status:</span>
+                    <span id="status" class="status-value">Loading...</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Current Tab:</span>
+                    <span id="currentTab" class="status-value">-</span>
+                </div>
+            </section>
+
+            <section class="actions-section">
+                <h3>Quick Actions</h3>
+                <div class="button-group">
+                    <button id="analyzePageBtn" class="btn btn-primary">
+                        📊 Analyze Page
+                    </button>
+                    <button id="highlightLinksBtn" class="btn btn-secondary">
+                        🔗 Highlight Links
+                    </button>
+                    <button id="scrollToTopBtn" class="btn btn-secondary">
+                        ⬆️ Scroll to Top
+                    </button>
+                </div>
+            </section>
+
+            <section class="tools-section">
+                <h3>Developer Tools</h3>
+                <div class="tool-item">
+                    <label for="cssInput">Inject CSS:</label>
+                    <textarea id="cssInput" placeholder="Enter CSS code..." rows="3"></textarea>
+                    <button id="injectCssBtn" class="btn btn-small">Apply CSS</button>
+                </div>
+                
+                <div class="tool-item">
+                    <label for="selectorInput">Element Selector:</label>
+                    <input type="text" id="selectorInput" placeholder="e.g., .my-class, #my-id">
+                    <button id="highlightElementBtn" class="btn btn-small">Highlight</button>
+                </div>
+            </section>
+
+            <section class="settings-section">
+                <h3>Settings</h3>
+                <div class="setting-item">
+                    <label class="switch">
+                        <input type="checkbox" id="enabledToggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                    <span>Extension Enabled</span>
+                </div>
+                <div class="setting-item">
+                    <label class="switch">
+                        <input type="checkbox" id="notificationsToggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                    <span>Notifications</span>
+                </div>
+            </section>
+        </main>
+
+        <footer class="popup-footer">
+            <button id="optionsBtn" class="btn btn-link">Options</button>
+            <div class="footer-links">
+                <a href="#" id="helpLink">Help</a>
+                <a href="#" id="feedbackLink">Feedback</a>
+            </div>
+        </footer>
+    </div>
+
+    <div id="loadingOverlay" class="loading-overlay hidden">
+        <div class="loading-spinner"></div>
+        <p>Processing...</p>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>
