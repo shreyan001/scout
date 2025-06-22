@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scout OCR Test - All Triggers</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #0a0a0a;
+            color: #ffffff;
+            line-height: 1.6;
+        }
+        
+        .test-section {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 24px;
+            margin: 20px 0;
+        }
+        
+        .test-section h2 {
+            color: #4285f4;
+            margin-top: 0;
+        }
+        
+        .crypto-content {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+        }
+        
+        .token-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 16px 0;
+        }
+        
+        .token-card {
+            background: #1e1e1e;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+        
+        .token-symbol {
+            font-size: 18px;
+            font-weight: bold;
+            color: #4caf50;
+        }
+        
+        .token-price {
+            font-size: 24px;
+            color: #ffd700;
+            margin: 8px 0;
+        }
+        
+        .address-box {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 4px;
+            padding: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            word-break: break-all;
+            margin: 8px 0;
+            cursor: pointer;
+        }
+        
+        .address-box:hover {
+            background: #333;
+            border-color: #4285f4;
+        }
+        
+        .chart-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        
+        .instructions {
+            background: #2a2a2a;
+            border-left: 4px solid #4285f4;
+            padding: 16px;
+            margin: 20px 0;
+        }
+        
+        .instructions h3 {
+            margin-top: 0;
+            color: #4285f4;
+        }
+        
+        .shortcut-key {
+            background: #333;
+            border: 1px solid #555;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        
+        .status-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 12px;
+            min-width: 200px;
+            text-align: center;
+            z-index: 1000;
+        }
+        
+        .defi-interface {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 20px;
+            color: white;
+            margin: 16px 0;
+        }
+        
+        .swap-interface {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 16px 0;
+        }
+        
+        .swap-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin: 16px 0;
+        }
+        
+        .swap-input {
+            flex: 1;
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 4px;
+            padding: 12px;
+            color: white;
+            font-size: 16px;
+        }
+        
+        .selectable-text {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 4px;
+            padding: 8px;
+            margin: 4px 0;
+            cursor: text;
+        }
+        
+        .selectable-text:hover {
+            background: #333;
+            border-color: #4285f4;
+        }
+    </style>
+</head>
+<body>
+    <div class="status-indicator" id="statusIndicator">
+        <div>Scout Extension Status</div>
+        <div id="statusText">Ready for testing</div>
+    </div>
+
+    <h1>🔍 Scout OCR Test Page - All Triggers</h1>
+    <p>Test all OCR trigger methods: Popup Button, Keyboard Shortcut (Ctrl+Shift+L), and Right-Click Context Menu</p>
+
+    <div class="instructions">
+        <h3>📋 Testing Instructions</h3>
+        <ol>
+            <li><strong>Popup Button:</strong> Click Scout extension icon → Click "Start OCR Scan"</li>
+            <li><strong>Keyboard Shortcut:</strong> Press <span class="shortcut-key">Ctrl + Shift + L</span> anywhere on this page</li>
+            <li><strong>Context Menu:</strong> Right-click on text, images, or page background → Select Scout OCR options</li>
+        </ol>
+        <p><strong>Expected:</strong> All methods should capture crypto content and display results in the popup.</p>
+    </div>
+
+    <div class="test-section">
+        <h2>💰 Token Prices Section</h2>
+        <div class="token-list">
+            <div class="token-card">
+                <div class="token-symbol">ETH</div>
+                <div class="token-price">$3,247.82</div>
+                <div style="color: #4caf50;">+2.34%</div>
+            </div>
+            <div class="token-card">
+                <div class="token-symbol">BTC</div>
+                <div class="token-price">$67,892.15</div>
+                <div style="color: #f44336;">-1.23%</div>
+            </div>
+            <div class="token-card">
+                <div class="token-symbol">USDC</div>
+                <div class="token-price">$1.00</div>
+                <div style="color: #4caf50;">+0.01%</div>
+            </div>
+            <div class="token-card">
+                <div class="token-symbol">UNI</div>
+                <div class="token-price">$8.42</div>
+                <div style="color: #4caf50;">+5.67%</div>
+            </div>
+            <div class="token-card">
+                <div class="token-symbol">LINK</div>
+                <div class="token-price">$14.28</div>
+                <div style="color: #f44336;">-2.11%</div>
+            </div>
+            <div class="token-card">
+                <div class="token-symbol">AAVE</div>
+                <div class="token-price">$132.45</div>
+                <div style="color: #4caf50;">+3.89%</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 Wallet Addresses Section</h2>
+        <p>Test context menu "Scan Selection" by selecting individual addresses:</p>
+        
+        <div class="selectable-text">
+            <strong>Ethereum Address:</strong> 0x742d35Cc32cC8fC27e0b748cC6Ad4d55a3C8e9f2
+        </div>
+        
+        <div class="selectable-text">
+            <strong>Token Contract:</strong> 0xA0b86a33E6417c891CE6b3e91B3Aa4BeEb9Dd9b3
+        </div>
+        
+        <div class="selectable-text">
+            <strong>USDC Contract:</strong> 0xA0b73E1Ff0B80914AB6Fe0444C2Da84C3a47E7e7
+        </div>
+        
+        <div class="selectable-text">
+            <strong>Popular Wallet:</strong> 0x28C6c06298E57e8BA25cBA7D37DE8b0d3c58Ee41
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🖼️ Image Testing Section</h2>
+        <p>Test context menu "OCR Scan Image" by right-clicking on images:</p>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+            <div>
+                <h4>Price Chart</h4>
+                <svg width="200" height="120" style="background: #2a2a2a; border-radius: 8px;">
+                    <text x="10" y="20" fill="#4285f4" font-size="12">ETH/USD</text>
+                    <text x="10" y="40" fill="#4caf50" font-size="14">$3,247.82</text>
+                    <text x="10" y="60" fill="#4caf50" font-size="10">+2.34% (24h)</text>
+                    <polyline points="10,100 50,80 90,60 130,70 170,50 190,45" 
+                              stroke="#4caf50" stroke-width="2" fill="none"/>
+                </svg>
+            </div>
+            
+            <div>
+                <h4>Token Logo</h4>
+                <svg width="120" height="120" style="background: #2a2a2a; border-radius: 50%;">
+                    <circle cx="60" cy="60" r="50" fill="#627eea"/>
+                    <text x="60" y="70" text-anchor="middle" fill="white" font-size="16" font-weight="bold">ETH</text>
+                </svg>
+            </div>
+            
+            <div>
+                <h4>DeFi Interface</h4>
+                <svg width="200" height="120" style="background: #1a1a1a; border-radius: 8px;">
+                    <text x="10" y="20" fill="#ffffff" font-size="10">Uniswap V3</text>
+                    <text x="10" y="40" fill="#4caf50" font-size="12">ETH → USDC</text>
+                    <text x="10" y="60" fill="#ffffff" font-size="10">Amount: 1.5 ETH</text>
+                    <text x="10" y="80" fill="#ffffff" font-size="10">Fee: 0.3%</text>
+                    <rect x="10" y="90" width="180" height="20" fill="#4285f4" rx="4"/>
+                    <text x="100" y="105" text-anchor="middle" fill="white" font-size="10">SWAP</text>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🔄 DeFi Interface Section</h2>
+        <div class="defi-interface">
+            <h3>Uniswap V3 - Swap Interface</h3>
+            <div class="swap-interface">
+                <div class="swap-row">
+                    <span>From:</span>
+                    <input type="text" class="swap-input" value="1.5" readonly>
+                    <span>ETH</span>
+                </div>
+                <div style="text-align: center; margin: 8px 0;">⬇️</div>
+                <div class="swap-row">
+                    <span>To:</span>
+                    <input type="text" class="swap-input" value="4,871.73" readonly>
+                    <span>USDC</span>
+                </div>
+                <div class="crypto-content">
+                    <p><strong>Pool Fee:</strong> 0.3%</p>
+                    <p><strong>Price Impact:</strong> 0.02%</p>
+                    <p><strong>Minimum Received:</strong> 4,862.45 USDC</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>📈 Portfolio Section</h2>
+        <div class="crypto-content">
+            <h3>Portfolio Balance: $45,892.33</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px;">
+                <div>
+                    <h4>Holdings</h4>
+                    <p>ETH: 12.5 ($40,597.75)</p>
+                    <p>BTC: 0.08 ($5,431.37)</p>
+                    <p>USDC: 1,863.21</p>
+                </div>
+                <div>
+                    <h4>Recent Transactions</h4>
+                    <p>Swapped 2 ETH → 6,495.64 USDC</p>
+                    <p>Added liquidity: ETH/USDC</p>
+                    <p>Claimed rewards: 125.42 UNI</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🎯 Context Menu Testing</h2>
+        <p>Right-click on different elements to test context menu options:</p>
+        
+        <div class="crypto-content">
+            <h4>📝 Selectable Text (Test "Scan Selection")</h4>
+            <div class="selectable-text">
+                Select this text: ETH price is $3,247.82 with address 0x742d35Cc32cC8fC27e0b748cC6Ad4d55a3C8e9f2
+            </div>
+            <div class="selectable-text">
+                BTC contract: 0xA0b86a33E6417c891CE6b3e91B3Aa4BeEb9Dd9b3 trading at $67,892.15
+            </div>
+        </div>
+
+        <div class="crypto-content">
+            <h4>🖼️ Images (Test "OCR Scan Image")</h4>
+            <svg width="300" height="100" style="background: #2a2a2a; border-radius: 8px; cursor: pointer;">
+                <text x="10" y="25" fill="#4285f4" font-size="14">Right-click to scan this image</text>
+                <text x="10" y="45" fill="#4caf50" font-size="12">Contains: LINK $14.28 (+3.2%)</text>
+                <text x="10" y="65" fill="#ffffff" font-size="10">Address: 0x514910771af9ca656af840dff83e8264ecf986ca</text>
+            </svg>
+        </div>
+
+        <div class="crypto-content">
+            <h4>📄 Page Background (Test "OCR Scan Page")</h4>
+            <p>Right-click on any empty space to trigger full page OCR scan</p>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>⌨️ Keyboard Shortcut Testing</h2>
+        <div class="instructions">
+            <h3>Press <span class="shortcut-key">Ctrl + Shift + L</span></h3>
+            <p>This should trigger a full page OCR scan that captures all the crypto content on this page including:</p>
+            <ul>
+                <li>Token symbols and prices (ETH, BTC, USDC, UNI, LINK, AAVE)</li>
+                <li>Wallet addresses and contract addresses</li>
+                <li>DeFi interface information</li>
+                <li>Portfolio data and transaction details</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Update status indicator
+        function updateStatus(message, type = 'info') {
+            const statusText = document.getElementById('statusText');
+            const statusIndicator = document.getElementById('statusIndicator');
+            
+            statusText.textContent = message;
+            
+            // Reset classes
+            statusIndicator.className = 'status-indicator';
+            
+            // Add type-specific styling
+            if (type === 'success') {
+                statusIndicator.style.borderColor = '#4caf50';
+                statusIndicator.style.background = '#1a2e1a';
+            } else if (type === 'error') {
+                statusIndicator.style.borderColor = '#f44336';
+                statusIndicator.style.background = '#2e1a1a';
+            } else if (type === 'loading') {
+                statusIndicator.style.borderColor = '#4285f4';
+                statusIndicator.style.background = '#1a1a2e';
+            } else {
+                statusIndicator.style.borderColor = '#333';
+                statusIndicator.style.background = '#1a1a1a';
+            }
+        }
+
+        // Listen for keyboard shortcut
+        document.addEventListener('keydown', (event) => {
+            if (event.ctrlKey && event.shiftKey && event.key === 'L') {
+                updateStatus('Keyboard shortcut detected! (Ctrl+Shift+L)', 'loading');
+                setTimeout(() => {
+                    updateStatus('Waiting for OCR results...', 'info');
+                }, 1000);
+            }
+        });
+
+        // Simulate selection highlighting
+        document.addEventListener('mouseup', () => {
+            const selection = window.getSelection();
+            if (selection.toString().length > 10) {
+                updateStatus(`Selected: ${selection.toString().substring(0, 30)}...`, 'info');
+            }
+        });
+
+        // Context menu detection
+        document.addEventListener('contextmenu', (event) => {
+            const target = event.target;
+            if (target.tagName === 'IMG' || target.tagName === 'svg') {
+                updateStatus('Right-clicked on image - Check for Scout OCR option', 'info');
+            } else if (window.getSelection().toString()) {
+                updateStatus('Right-clicked on selection - Check for Scout Scan option', 'info');
+            } else {
+                updateStatus('Right-clicked on page - Check for Scout OCR Scan Page', 'info');
+            }
+        });
+
+        // Initial status
+        updateStatus('Ready for Scout OCR testing', 'success');
+        
+        // Add periodic status updates
+        setInterval(() => {
+            const messages = [
+                'Test popup button OCR scan',
+                'Try Ctrl+Shift+L keyboard shortcut',
+                'Right-click for context menu options',
+                'Select text and right-click to scan',
+                'Right-click images for OCR scan'
+            ];
+            const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+            updateStatus(randomMessage, 'info');
+        }, 8000);
+    </script>
+</body>
+</html>

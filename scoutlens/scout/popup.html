@@ -1,113 +1,81 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <me            <!-- Scout Actions Section -->
-            <section class="scout-actions-section">
-                <h3>Scout Actions</h3>
-                <div class="button-group">
-                    <button id="scanPageBtn" class="btn btn-primary">
-                        🔍 Scan & Analyze
-                    </button>
-                    <button id="ocrScanBtn" class="btn btn-secondary">
-                        📷 OCR Scan
-                    </button>
-                    <button id="tokenLookupBtn" class="btn btn-secondary">
-                        💰 Token Lookup
-                    </button>
-                </div>
-            </section>-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scout - Web3 AI Agent</title>
     <link rel="stylesheet" href="popup.css">
 </head>
-<body>    <div class="popup-container">
+<body>
+    <div class="popup-container">
         <header class="popup-header">
             <h1>🔍 Scout</h1>
-            <p class="tagline">Your Web3 AI Agent</p>
         </header>
 
-        <main class="popup-main">            <!-- Wallet Address Section -->
-            <section id="walletSection" class="wallet-section">
-                <div class="wallet-input-section">
-                    <h3>Wallet Address (Optional)</h3>
-                    <p class="wallet-description">Enter your wallet address for enhanced analysis features</p>
-                    
-                    <div class="wallet-input-group">
-                        <input 
-                            type="text" 
-                            id="walletAddressInput" 
-                            class="wallet-input" 
-                            placeholder="0x1234...abcd (optional)"
-                            maxlength="42"
-                        >
-                        <button id="saveAddressBtn" class="btn btn-secondary btn-small">
-                            💾 Save
-                        </button>
-                        <button id="clearAddressBtn" class="btn btn-outline btn-small hidden">
-                            🗑️ Clear
-                        </button>
+        <main class="popup-main">
+            <!-- Wallet Address Section -->
+            <section class="wallet-section">
+                <h3>Wallet Address</h3>
+                <div class="wallet-input-group">
+                    <input 
+                        type="text" 
+                        id="walletAddressInput" 
+                        class="wallet-input" 
+                        placeholder="0x1234...abcd (optional)"
+                        maxlength="42"
+                    >
+                    <button id="saveAddressBtn" class="btn save-btn">Save</button>
+                    <button id="clearAddressBtn" class="btn clear-btn hidden">Clear</button>
+                </div>
+                
+                <div id="walletStatus" class="wallet-status hidden">
+                    <span class="status-icon">✓</span>
+                    <span id="storedAddress" class="stored-address">0x...</span>
+                </div>
+            </section>
+
+            <!-- Project Info Section -->
+            <section class="info-section">
+                <h3>About Scout</h3>
+                <p>Scout is a Web3 AI agent that analyzes blockchain content on web pages. It can extract wallet addresses, identify tokens, and perform risk analysis using advanced OCR technology.</p>
+                
+                <div class="features">
+                    <div class="feature-item">
+                        <span class="feature-icon">🔍</span>
+                        <span>Page Analysis</span>
                     </div>
-                    
-                    <div id="walletStatus" class="wallet-status hidden">
-                        <div class="wallet-stored">
-                            <span class="wallet-icon">✅</span>
-                            <span id="storedAddress" class="stored-address">0x...</span>
-                            <span class="wallet-label">Stored Address</span>
-                        </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">📷</span>
+                        <span>OCR Scanning</span>
                     </div>
-                    
-                    <div class="wallet-help">
-                        <p><small>💡 You can use Scout without a wallet address, but some features may be limited.</small></p>
+                    <div class="feature-item">
+                        <span class="feature-icon">⚠️</span>
+                        <span>Risk Detection</span>
                     </div>
                 </div>
             </section>
 
-            <!-- Scout Actions Section -->
-            <section class="scout-actions-section">
-                <h3>Scout Actions</h3>
-                <div class="button-group">
-                    <button id="scanPageBtn" class="btn btn-primary" disabled>
-                        � Scan & Analyze
-                    </button>
-                    <button id="ocrScanBtn" class="btn btn-secondary" disabled>
-                        � OCR Scan
-                    </button>
-                    <button id="tokenLookupBtn" class="btn btn-secondary" disabled>
-                        💰 Token Lookup
-                    </button>
-                </div>
+            <!-- OCR Details Section -->
+            <section class="ocr-section">
+                <h3>OCR Technology</h3>
+                <p>Our Optical Character Recognition system can:</p>
+                <ul>
+                    <li>Extract text from images and screenshots</li>
+                    <li>Identify wallet addresses in visual content</li>
+                    <li>Detect token contracts and smart contract addresses</li>
+                    <li>Analyze DeFi protocol interfaces</li>
+                </ul>
+                <button id="ocrScanBtn" class="btn primary-btn ocr-scan-btn">
+                    <span class="btn-icon">📷</span>
+                    <span class="btn-text">Start OCR Scan</span>
+                </button>
             </section>
 
-            <!-- Scan Results Section -->
+            <!-- Results Section -->
             <section id="scanResults" class="scan-results-section hidden">
                 <h3>Scan Results</h3>
                 <div id="resultsContainer" class="results-container">
                     <!-- Results will be populated here -->
-                </div>
-            </section>
-
-            <!-- Token Analysis Section -->
-            <section id="tokenAnalysis" class="token-analysis-section hidden">
-                <h3>Token Analysis</h3>
-                <div id="tokenData" class="token-data">
-                    <!-- Token data will be populated here -->
-                </div>
-            </section>            <!-- Quick Tools Section -->
-            <section class="quick-tools-section">
-                <h3>Quick Tools</h3>
-                <div class="tool-grid">
-                    <button id="highlightTokensBtn" class="tool-btn">
-                        🏷️ Highlight Tokens
-                    </button>
-                    <button id="extractAddressesBtn" class="tool-btn">
-                        📋 Extract Addresses
-                    </button>
-                    <button id="riskAnalysisBtn" class="tool-btn">
-                        ⚠️ Risk Analysis
-                    </button>
-                    <button id="priceAlertsBtn" class="tool-btn">
-                        🔔 Price Alerts
-                    </button>
                 </div>
             </section>
         </main>
@@ -117,22 +85,17 @@
                 <span id="statusIndicator" class="status-indicator">●</span>
                 <span id="statusText" class="status-text">Ready</span>
             </div>
-            <div class="footer-links">
-                <button id="settingsBtn" class="btn-link">⚙️ Settings</button>
-                <button id="helpBtn" class="btn-link">❓ Help</button>
-            </div>
         </footer>
     </div>
 
     <!-- Loading Overlay -->
     <div id="loadingOverlay" class="loading-overlay hidden">
         <div class="loading-spinner"></div>
-        <p id="loadingText">Initializing Scout...</p>
-    </div>
-
-    <!-- Toast Notifications -->
+        <p id="loadingText">Processing...</p>
+    </div>    <!-- Toast Notifications -->
     <div id="toastContainer" class="toast-container"></div>
 
+    <script src="ocr-processor.js"></script>
     <script src="popup.js"></script>
 </body>
 </html>

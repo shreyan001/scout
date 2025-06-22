@@ -3,6 +3,206 @@
 
 console.log('Scout content script loaded');
 
+// Import and initialize OCR Integration Package
+let scoutOCRIntegration = null;
+
+// Initialize Scout OCR Integration Package
+async function initializeScoutOCR() {
+  try {
+    // Load the OCR Integration Package
+    const script = document.createElement('script');
+    script.src = chrome.runtime.getURL('ocr-integration-package.js');
+    script.onload = () => {
+      console.log('🔍 Scout OCR Integration Package loaded');
+      
+      // Initialize the OCR package with Scout-specific configuration
+      scoutOCRIntegration = new window.OCRIntegrationPackage({
+        // Custom Scout configuration
+        confidenceThreshold: 0.8,
+        autoCloseDelay: 8000,
+        animationDuration: 400
+      });
+      
+      // Set Scout callbacks for OCR completion and text analysis
+      scoutOCRIntegration.setScoutCallbacks(
+        handleOCRIntegrationComplete,
+        handleOCRTextAnalysis
+      );
+      
+      // Initialize the OCR integration
+      scoutOCRIntegration.initialize();
+      
+      console.log('✅ Scout OCR Integration initialized successfully');
+    };
+    
+    script.onerror = (error) => {
+      console.error('❌ Failed to load Scout OCR Integration Package:', error);
+    };
+    
+    document.head.appendChild(script);
+    
+  } catch (error) {
+    console.error('❌ Error initializing Scout OCR Integration:', error);
+  }
+}
+
+// Handle OCR Integration Package completion
+async function handleOCRIntegrationComplete(ocrData) {
+  console.log('🔍 Scout OCR Integration completed:', ocrData);
+  
+  try {
+    // Process the OCR data with Scout's existing analysis
+    const scoutAnalysis = await processOCRWithScout(ocrData);
+    
+    // Send to background for further processing
+    chrome.runtime.sendMessage({
+      type: 'OCR_INTEGRATION_COMPLETE',
+      ocrData: ocrData,
+      scoutAnalysis: scoutAnalysis,
+      timestamp: Date.now()
+    }).catch(console.error);
+    
+    // Show Scout-specific notifications if needed
+    if (scoutAnalysis.hasWebXContent || scoutAnalysis.riskLevel > 0.5) {
+      showScoutAnalysisNotification(scoutAnalysis);
+    }
+    
+  } catch (error) {
+    console.error('❌ Error processing OCR with Scout:', error);
+  }
+}
+
+// Handle text analysis from OCR Integration Package
+async function handleOCRTextAnalysis(text, ocrData) {
+  console.log('🧠 Scout OCR text analysis requested:', text);
+  
+  try {
+    // Use Scout's existing analysis capabilities
+    const analysisResult = await analyzeTextContent(text, ocrData.context);
+    
+    // Send to backend for AI analysis
+    chrome.runtime.sendMessage({
+      type: 'ANALYZE_WEB3',
+      data: {
+        text: text,
+        context: ocrData.context,
+        analysisType: 'ocr-text-analysis',
+        timestamp: Date.now(),
+        ocrSource: true
+      }
+    }).catch(console.error);
+    
+    return analysisResult;
+    
+  } catch (error) {
+    console.error('❌ Error in Scout OCR text analysis:', error);
+  }
+}
+
+// Process OCR data using Scout's analysis capabilities
+async function processOCRWithScout(ocrData) {
+  const analysis = {
+    hasWebXContent: false,
+    riskLevel: 0,
+    tokens: [],
+    addresses: [],
+    entities: [],
+    recommendations: []
+  };
+  
+  try {
+    // Extract crypto addresses from text
+    const addresses = extractAddressesFromText(ocrData.text);
+    analysis.addresses = addresses;
+    
+    // Extract token references
+    const tokens = extractTokensFromText(ocrData.text);
+    analysis.tokens = tokens;
+    
+    // Check for Web3 content
+    analysis.hasWebXContent = (
+      addresses.length > 0 ||
+      tokens.length > 0 ||
+      containsWeb3Keywords(ocrData.text)
+    );
+    
+    // Calculate risk level
+    analysis.riskLevel = calculateContentRiskLevel(ocrData.text, addresses, tokens);
+    
+    // Extract entities (contracts, DEX names, etc.)
+    analysis.entities = extractWeb3Entities(ocrData.text);
+    
+    // Generate recommendations
+    if (analysis.hasWebXContent) {
+      analysis.recommendations = generateScoutRecommendations(analysis);
+    }
+    
+    console.log('🔍 Scout OCR analysis completed:', analysis);
+    return analysis;
+    
+  } catch (error) {
+    console.error('❌ Error in Scout OCR processing:', error);
+    return analysis;
+  }
+}
+
+// Show Scout-specific analysis notification
+function showScoutAnalysisNotification(analysis) {
+  const notification = document.createElement('div');
+  notification.className = 'scout-ocr-notification';
+  notification.innerHTML = `
+    <div class="scout-notification-header">
+      <span class="scout-icon">🛡️</span>
+      <span class="scout-title">Scout Analysis</span>
+      <button class="scout-close-btn" onclick="this.parentElement.parentElement.remove()">✖</button>
+    </div>
+    <div class="scout-notification-content">
+      ${analysis.riskLevel > 0.7 ? 
+        `<div class="scout-warning">⚠️ High risk content detected</div>` : 
+        '<div class="scout-info">ℹ️ Web3 content analysis complete</div>'
+      }
+      ${analysis.addresses.length > 0 ? 
+        `<div class="scout-addresses">📍 ${analysis.addresses.length} address(es) found</div>` : ''
+      }
+      ${analysis.tokens.length > 0 ? 
+        `<div class="scout-tokens">🪙 ${analysis.tokens.length} token(s) found</div>` : ''
+      }
+    </div>
+  `;
+  
+  // Add Scout notification styles
+  notification.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+    z-index: 10003;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    max-width: 320px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.2);
+    animation: scoutSlideIn 0.4s ease-out;
+  `;
+  
+  document.body.appendChild(notification);
+  
+  // Auto-remove after 8 seconds
+  setTimeout(() => {
+    if (notification.parentNode) {
+      notification.style.animation = 'scoutSlideOut 0.3s ease-in forwards';
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.remove();
+        }
+      }, 300);
+    }
+  }, 8000);
+}
+
 // Scout-specific state
 let isScoutActive = false;
 let scanHighlights = [];
@@ -106,12 +306,23 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         .then(results => sendResponse({ success: true, data: results }))
         .catch(error => sendResponse({ success: false, error: error.message }));
       break;
-      
-    case 'SCAN_OCR':
-      performOCRScan(message.data)
-        .then(results => sendResponse({ success: true, data: results }))
+        case 'SCOUT_OCR_SCAN':
+      performScoutOCRScan(message.data)
+        .then(results => sendResponse({ success: true, results: results }))
         .catch(error => sendResponse({ success: false, error: error.message }));
-      break;
+      return true; // Keep message channel open for async response
+
+    case 'TRIGGER_OCR_SCAN':
+      handleTriggerOCRScan(message.options)
+        .then(results => sendResponse({ success: true, results: results }))
+        .catch(error => sendResponse({ success: false, error: error.message }));
+      return true; // Keep message channel open for async response
+      
+    case 'ANALYZE_ADDRESS':
+      handleAddressAnalysis(message.address)
+        .then(results => sendResponse({ success: true, results: results }))
+        .catch(error => sendResponse({ success: false, error: error.message }));
+      return true; // Keep message channel open for async response
       
     case 'HIGHLIGHT_TOKENS':
       highlightTokens(message.data);
@@ -122,9 +333,24 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       const pageInfo = getPageInfo();
       sendResponse({ success: true, data: pageInfo });
       break;
-      
-    case 'CLEAR_HIGHLIGHTS':
+        case 'CLEAR_HIGHLIGHTS':
       clearHighlights();
+      sendResponse({ success: true });
+      break;
+      
+    // Backend Integration Message Handlers
+    case 'WEB3_ANALYSIS_RESULT':
+      handleWeb3AnalysisResult(message.result, message.source);
+      sendResponse({ success: true });
+      break;
+      
+    case 'ADDRESS_ANALYSIS_RESULT':
+      handleAddressAnalysisResult(message.address, message.result, message.source);
+      sendResponse({ success: true });
+      break;
+      
+    case 'OCR_ANALYSIS_RESULT':
+      handleOCRAnalysisResult(message.original, message.result, message.source);
       sendResponse({ success: true });
       break;
       
@@ -215,6 +441,261 @@ async function performOCRScan(options = {}) {
     console.error('OCR scan error:', error);
     throw error;
   }
+}
+
+// Scout OCR scan function
+async function performScoutOCRScan(options = {}) {
+    try {
+        console.log('Scout: Starting enhanced OCR scan...');
+        
+        // Show OCR scanning indicator
+        showOCRIndicator();
+        
+        // Collect comprehensive page content
+        const pageContent = {
+            text: document.body.innerText,
+            html: document.documentElement.outerHTML.substring(0, 50000), // First 50KB of HTML
+            images: [],
+            url: window.location.href,
+            title: document.title,
+            timestamp: Date.now(),
+            viewport: {
+                width: window.innerWidth,
+                height: window.innerHeight,
+                scrollX: window.scrollX,
+                scrollY: window.scrollY
+            },
+            meta: {
+                description: document.querySelector('meta[name="description"]')?.content || '',
+                keywords: document.querySelector('meta[name="keywords"]')?.content || '',
+                author: document.querySelector('meta[name="author"]')?.content || ''
+            }
+        };
+        
+        // Collect images with enhanced metadata
+        const images = Array.from(document.images);
+        for (const img of images) {
+            if (img.complete && img.naturalWidth > 0 && img.naturalHeight > 0) {
+                // Focus on images that might contain crypto content
+                const isRelevant = (
+                    img.naturalWidth >= 100 && img.naturalHeight >= 50 ||
+                    img.alt?.toLowerCase().includes('token') ||
+                    img.alt?.toLowerCase().includes('coin') ||
+                    img.alt?.toLowerCase().includes('chart') ||
+                    img.src.toLowerCase().includes('chart') ||
+                    img.src.toLowerCase().includes('token') ||
+                    img.className?.toLowerCase().includes('crypto')
+                );
+                
+                if (isRelevant || images.length < 10) { // Include first 10 images regardless
+                    pageContent.images.push({
+                        src: img.src,
+                        alt: img.alt || '',
+                        width: img.naturalWidth,
+                        height: img.naturalHeight,
+                        visible: isElementVisible(img),
+                        className: img.className,
+                        dataAttributes: Object.fromEntries(
+                            [...img.attributes]
+                            .filter(attr => attr.name.startsWith('data-'))
+                            .map(attr => [attr.name, attr.value])
+                        )
+                    });
+                }
+            }
+        }
+        
+        // Enhanced token and address detection
+        const tokens = findTokenReferences();
+        const addresses = findCryptoAddresses();
+        const contracts = findContractAddresses();
+        
+        // Analyze page structure for crypto content
+        const cryptoContext = analyzeCryptoContext();
+        
+        // Prepare comprehensive analysis
+        const analysis = {
+            pageContent: pageContent,
+            tokens: tokens,
+            addresses: addresses,
+            contracts: contracts,
+            cryptoContext: cryptoContext,
+            enhancedFeatures: !!options.walletAddress,
+            walletAddress: options.walletAddress,
+            confidence: calculateAnalysisConfidence(tokens, addresses, contracts, cryptoContext),
+            processingTime: Date.now() - pageContent.timestamp,
+            scanType: 'comprehensive-ocr',
+            version: '2.0'
+        };
+          console.log('Scout: Enhanced OCR scan completed', analysis);
+        
+        // Try to send to backend for enhanced processing
+        try {
+          const backendResponse = await chrome.runtime.sendMessage({
+            type: 'PROCESS_OCR_BACKEND',
+            ocrResults: analysis,
+            context: {
+              url: window.location.href,
+              timestamp: Date.now(),
+              pageTitle: document.title
+            }
+          });
+          
+          if (backendResponse.success) {
+            console.log('Scout: Backend OCR processing successful');
+            // Backend will handle result display via handleOCRAnalysisResult
+          } else {
+            console.warn('Scout: Backend OCR processing failed:', backendResponse.error);
+          }
+        } catch (backendError) {
+          console.warn('Scout: Backend OCR processing unavailable:', backendError.message);
+        }
+        
+        hideOCRIndicator();
+        return analysis;
+        
+    } catch (error) {
+        console.error('Scout OCR scan error:', error);
+        hideOCRIndicator();
+        throw error;
+    }
+}
+
+// Show OCR scanning indicator
+function showOCRIndicator() {
+    const indicator = document.createElement('div');
+    indicator.id = 'scout-ocr-indicator';
+    indicator.innerHTML = `
+        <div class="scout-ocr-pulse">
+            <span>🔍</span>
+            <span>Scout OCR Scanning...</span>
+        </div>
+    `;
+    indicator.style.cssText = `
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 12px 20px;
+        border-radius: 25px;
+        z-index: 10000;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+        backdrop-filter: blur(10px);
+        animation: scoutPulse 2s infinite;
+    `;
+    
+    // Add animation
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes scoutPulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.9; }
+        }
+        .scout-ocr-pulse {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+    `;
+    document.head.appendChild(style);
+    document.body.appendChild(indicator);
+}
+
+// Hide OCR scanning indicator
+function hideOCRIndicator() {
+    const indicator = document.getElementById('scout-ocr-indicator');
+    if (indicator) {
+        indicator.style.transition = 'all 0.3s ease';
+        indicator.style.opacity = '0';
+        indicator.style.transform = 'translateY(-10px)';
+        setTimeout(() => {
+            if (indicator.parentNode) {
+                indicator.parentNode.removeChild(indicator);
+            }
+        }, 300);
+    }
+}
+
+// Analyze crypto context on the page
+function analyzeCryptoContext() {
+    const context = {
+        isDeFiSite: false,
+        isExchange: false,
+        isCryptoNews: false,
+        isWallet: false,
+        hasCharts: false,
+        hasPrices: false,
+        hasTrading: false,
+        confidence: 0
+    };
+    
+    const text = document.body.innerText.toLowerCase();
+    const html = document.documentElement.outerHTML.toLowerCase();
+    
+    // Check for DeFi indicators
+    const defiKeywords = ['defi', 'liquidity', 'yield', 'farming', 'staking', 'swap', 'uniswap', 'sushiswap', 'compound', 'aave'];
+    context.isDeFiSite = defiKeywords.some(keyword => text.includes(keyword));
+    
+    // Check for exchange indicators
+    const exchangeKeywords = ['exchange', 'trading', 'buy', 'sell', 'order', 'market', 'binance', 'coinbase', 'kraken'];
+    context.isExchange = exchangeKeywords.some(keyword => text.includes(keyword));
+    
+    // Check for crypto news
+    const newsKeywords = ['crypto', 'bitcoin', 'ethereum', 'blockchain', 'news', 'analysis', 'price prediction'];
+    context.isCryptoNews = newsKeywords.some(keyword => text.includes(keyword));
+    
+    // Check for wallet
+    const walletKeywords = ['wallet', 'connect', 'metamask', 'trust wallet', 'ledger'];
+    context.isWallet = walletKeywords.some(keyword => text.includes(keyword));
+    
+    // Check for charts
+    context.hasCharts = html.includes('chart') || html.includes('tradingview') || document.querySelector('canvas');
+    
+    // Check for prices
+    context.hasPrices = /\$[\d,]+\.?\d*/.test(text) || text.includes('price');
+    
+    // Check for trading
+    context.hasTrading = text.includes('trade') || text.includes('order') || text.includes('volume');
+    
+    // Calculate confidence
+    const indicators = [context.isDeFiSite, context.isExchange, context.isCryptoNews, 
+                      context.isWallet, context.hasCharts, context.hasPrices, context.hasTrading];
+    context.confidence = indicators.filter(Boolean).length / indicators.length;
+    
+    return context;
+}
+
+// Calculate analysis confidence
+function calculateAnalysisConfidence(tokens, addresses, contracts, context) {
+    let confidence = 0.3; // Base confidence
+    
+    if (tokens.length > 0) confidence += 0.2;
+    if (addresses.length > 0) confidence += 0.1;
+    if (contracts.length > 0) confidence += 0.1;
+    if (context.confidence > 0.5) confidence += 0.2;
+    if (context.hasCharts) confidence += 0.1;
+    
+    return Math.min(confidence, 1.0);
+}
+
+// Check if element is visible
+function isElementVisible(element) {
+    const rect = element.getBoundingClientRect();
+    const style = window.getComputedStyle(element);
+    
+    return (
+        rect.width > 0 &&
+        rect.height > 0 &&
+        style.display !== 'none' &&
+        style.visibility !== 'hidden' &&
+        style.opacity !== '0' &&
+        rect.top < window.innerHeight &&
+        rect.bottom > 0
+    );
 }
 
 // Token detection functions
@@ -784,3 +1265,571 @@ window.scoutConnectWalletConnect = function() {
 window.scoutConnectCoinbase = function() {
   alert('Coinbase Wallet integration coming soon!');
 };
+
+// Handle triggered OCR scan from keyboard shortcut or context menu
+async function handleTriggerOCRScan(options = {}) {
+  try {
+    console.log('Scout: Handling triggered OCR scan with options:', options);
+    
+    // Show immediate feedback
+    showOCRIndicator();
+    
+    // Determine scan type based on options
+    let scanData = {};
+    
+    if (options.selectedText) {
+      // Context menu - scan selection
+      scanData.selectedText = options.selectedText;
+      scanData.scanType = 'selection';
+    } else if (options.imageUrl) {
+      // Context menu - scan image
+      scanData.imageUrl = options.imageUrl;
+      scanData.scanType = 'image';
+    } else {
+      // Keyboard shortcut - scan full page
+      scanData.scanType = 'fullPage';
+    }
+    
+    // Perform the OCR scan
+    const results = await performScoutOCRScan(scanData);
+      // Send results to background script for popup display
+    sendMessageToBackground('OCR_SCAN_COMPLETE', {
+      trigger: (options.selectedText || options.imageUrl) ? 'contextMenu' : 'keyboard',
+      results: results,
+      timestamp: Date.now()
+    });
+    
+    // Show success feedback
+    showOCRSuccess();
+    
+    return results;
+    
+  } catch (error) {
+    console.error('Scout: Error in triggered OCR scan:', error);
+    hideOCRIndicator();
+    showOCRError(error.message);
+    throw error;
+  }
+}
+
+// Show OCR success feedback
+function showOCRSuccess() {
+  hideOCRIndicator();
+  
+  const notification = document.createElement('div');
+  notification.innerHTML = `
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span style="color: #4caf50;">✓</span>
+      <span>OCR Scan Complete</span>
+    </div>
+  `;
+  notification.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    z-index: 10000;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    border-left: 4px solid #4caf50;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    animation: slideInRight 0.3s ease;
+  `;
+  
+  // Add animation
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes slideInRight {
+      from { transform: translateX(100px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+  `;
+  document.head.appendChild(style);
+  document.body.appendChild(notification);
+  
+  // Auto remove after 3 seconds
+  setTimeout(() => {
+    if (notification.parentNode) {
+      notification.style.animation = 'slideInRight 0.3s ease reverse';
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.parentNode.removeChild(notification);
+        }
+      }, 300);
+    }
+  }, 3000);
+}
+
+// Show OCR error feedback
+function showOCRError(message) {
+  const notification = document.createElement('div');
+  notification.innerHTML = `
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span style="color: #f44336;">✗</span>
+      <span>OCR Scan Failed: ${message}</span>
+    </div>
+  `;
+  notification.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    z-index: 10000;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    border-left: 4px solid #f44336;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  `;
+  
+  document.body.appendChild(notification);
+  
+  // Auto remove after 5 seconds
+  setTimeout(() => {
+    if (notification.parentNode) {
+      notification.parentNode.removeChild(notification);
+    }
+  }, 5000);
+}
+
+// Handle address analysis from context menu
+async function handleAddressAnalysis(address) {
+  try {
+    console.log('Scout: Analyzing address:', address);
+    
+    // Show analysis indicator
+    const indicator = document.createElement('div');
+    indicator.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span>📊</span>
+        <span>Analyzing Address...</span>
+      </div>
+    `;
+    indicator.style.cssText = `
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 25px;
+      z-index: 10000;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 0 4px 20px rgba(240, 147, 251, 0.3);
+      animation: scoutPulse 2s infinite;
+    `;
+    
+    document.body.appendChild(indicator);
+    
+    try {
+      // Try backend analysis first
+      const backendResponse = await chrome.runtime.sendMessage({
+        type: 'ANALYZE_ADDRESS_BACKEND',
+        address: address,
+        context: {
+          url: window.location.href,
+          timestamp: Date.now(),
+          pageTitle: document.title
+        }
+      });
+      
+      if (backendResponse.success) {
+        console.log('Scout: Backend address analysis successful');
+        
+        // Remove indicator
+        if (indicator.parentNode) {
+          indicator.parentNode.removeChild(indicator);
+        }
+        
+        // Backend will handle result display via handleAddressAnalysisResult
+        return backendResponse.result;
+      } else {
+        throw new Error(backendResponse.error || 'Backend analysis failed');
+      }
+      
+    } catch (backendError) {
+      console.warn('Scout: Backend analysis failed, using fallback:', backendError.message);
+      
+      // Fallback to local analysis
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Mock analysis results (fallback)
+      const analysis = {
+        address: address,
+        type: address.startsWith('0x') ? 'Ethereum' : 'Unknown',
+        balance: '$' + (Math.random() * 10000).toFixed(2),
+        transactions: Math.floor(Math.random() * 1000),
+        risk: Math.random() > 0.7 ? 'High' : Math.random() > 0.4 ? 'Medium' : 'Low',
+        labels: ['DeFi User', 'Active Trader'],
+        riskScore: Math.random(),
+        source: 'fallback'
+      };
+      
+      // Remove indicator
+      if (indicator.parentNode) {
+        indicator.parentNode.removeChild(indicator);
+      }
+      
+      // Show fallback result
+      const notification = document.createElement('div');
+      notification.innerHTML = `
+        <div style="display: flex; align-items: flex-start; gap: 12px;">
+          <div style="background: rgba(255,255,255,0.2); border-radius: 50%; padding: 8px; min-width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+            👤
+          </div>
+          <div style="flex: 1;">
+            <div style="font-weight: 600; margin-bottom: 4px;">Address Analysis (Offline)</div>
+            <div style="font-size: 12px; opacity: 0.7; margin-bottom: 8px; word-break: break-all;">
+              ${address.slice(0, 8)}...${address.slice(-6)}
+            </div>
+            <div style="font-size: 13px; line-height: 1.4;">
+              <div>Type: ${analysis.type}</div>
+              <div>Risk Level: ${analysis.risk}</div>
+              <div>Backend unavailable - limited analysis</div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      showScoutNotification(notification, 5000, 'warning');
+      
+      // Send to background for storage
+      chrome.runtime.sendMessage({
+        type: 'ADDRESS_ANALYSIS_COMPLETE',
+        data: {
+          address: address,
+          analysis: analysis,
+          timestamp: Date.now(),
+          trigger: 'context_menu'
+        }
+      }).catch(console.error);
+      
+      return analysis;
+    }
+    
+  } catch (error) {
+    console.error('Scout: Address analysis error:', error);
+    
+    // Remove indicator if present
+    const existingIndicator = document.getElementById('scout-analysis-indicator');
+    if (existingIndicator) {
+      existingIndicator.remove();
+    }
+    
+    throw error;  }
+}
+
+// Backend Integration Functions
+
+// Handle Web3 analysis results from backend
+function handleWeb3AnalysisResult(result, source) {
+  console.log('Scout: Received Web3 analysis result from', source, result);
+  
+  try {
+    // Create in-page notification for analysis results
+    const notification = document.createElement('div');
+    notification.innerHTML = `
+      <div style="display: flex; align-items: flex-start; gap: 12px;">
+        <div style="background: rgba(255,255,255,0.2); border-radius: 50%; padding: 8px; min-width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+          🧠
+        </div>
+        <div style="flex: 1;">
+          <div style="font-weight: 600; margin-bottom: 4px;">AI Analysis Complete</div>
+          <div style="font-size: 13px; opacity: 0.9; margin-bottom: 8px;">
+            Found ${result.entities?.length || 0} entities with ${Math.round(result.confidence * 100)}% confidence
+          </div>
+          ${result.risks?.length > 0 ? `
+            <div style="background: rgba(255,107,107,0.2); padding: 6px 10px; border-radius: 6px; font-size: 12px; margin-bottom: 6px;">
+              ⚠️ ${result.risks.length} risk${result.risks.length !== 1 ? 's' : ''} identified
+            </div>
+          ` : ''}
+          ${result.opportunities?.length > 0 ? `
+            <div style="background: rgba(107,203,119,0.2); padding: 6px 10px; border-radius: 6px; font-size: 12px;">
+              💡 ${result.opportunities.length} opportunit${result.opportunities.length !== 1 ? 'ies' : 'y'} found
+            </div>
+          ` : ''}
+        </div>
+      </div>
+    `;
+    
+    showScoutNotification(notification, 8000, 'success');
+    
+    // Highlight entities if analysis found any
+    if (result.entities && result.entities.length > 0) {
+      highlightAnalysisEntities(result.entities);
+    }
+    
+  } catch (error) {
+    console.error('Scout: Error handling Web3 analysis result:', error);
+  }
+}
+
+// Handle address analysis results from backend
+function handleAddressAnalysisResult(address, result, source) {
+  console.log('Scout: Received address analysis result from', source, result);
+  
+  try {
+    // Create in-page notification for address analysis
+    const riskColor = result.riskScore > 0.7 ? '#ff6b6b' : 
+                     result.riskScore > 0.4 ? '#ffa726' : '#4caf50';
+    
+    const notification = document.createElement('div');
+    notification.innerHTML = `
+      <div style="display: flex; align-items: flex-start; gap: 12px;">
+        <div style="background: ${riskColor}20; border-radius: 50%; padding: 8px; min-width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+          ${result.type === 'contract' ? '📋' : result.type === 'token' ? '🪙' : '👤'}
+        </div>
+        <div style="flex: 1;">
+          <div style="font-weight: 600; margin-bottom: 4px;">${result.type || 'Address'} Analysis</div>
+          <div style="font-size: 12px; opacity: 0.7; margin-bottom: 6px; word-break: break-all;">
+            ${address.slice(0, 8)}...${address.slice(-6)}
+          </div>
+          <div style="background: ${riskColor}20; color: ${riskColor}; padding: 4px 8px; border-radius: 4px; font-size: 12px; display: inline-block; font-weight: 600;">
+            Risk: ${Math.round(result.riskScore * 100)}%
+          </div>
+          ${result.verification?.verified ? `
+            <div style="background: rgba(76,175,80,0.2); color: #4caf50; padding: 4px 8px; border-radius: 4px; font-size: 12px; display: inline-block; margin-left: 6px; font-weight: 600;">
+              ✓ Verified
+            </div>
+          ` : ''}
+        </div>
+      </div>
+    `;
+    
+    const riskLevel = result.riskScore > 0.7 ? 'error' : 
+                     result.riskScore > 0.4 ? 'warning' : 'success';
+    showScoutNotification(notification, 6000, riskLevel);
+    
+    // If this address is visible on the page, highlight it
+    highlightAddressOnPage(address, result.riskScore);
+    
+  } catch (error) {
+    console.error('Scout: Error handling address analysis result:', error);
+  }
+}
+
+// Handle OCR analysis results from backend
+function handleOCRAnalysisResult(originalResults, processedResult, source) {
+  console.log('Scout: Received OCR analysis result from', source, processedResult);
+  
+  try {
+    // Create in-page notification for OCR analysis
+    const notification = document.createElement('div');
+    notification.innerHTML = `
+      <div style="display: flex; align-items: flex-start; gap: 12px;">
+        <div style="background: rgba(255,255,255,0.2); border-radius: 50%; padding: 8px; min-width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+          📷
+        </div>
+        <div style="flex: 1;">
+          <div style="font-weight: 600; margin-bottom: 4px;">OCR Analysis Complete</div>
+          <div style="font-size: 13px; opacity: 0.9; margin-bottom: 8px;">
+            Processed text and found ${processedResult.entities?.length || 0} entities
+          </div>
+          ${processedResult.insights?.length > 0 ? `
+            <div style="background: rgba(33,150,243,0.2); padding: 6px 10px; border-radius: 6px; font-size: 12px; margin-bottom: 6px;">
+              💡 ${processedResult.insights.length} insight${processedResult.insights.length !== 1 ? 's' : ''} generated
+            </div>
+          ` : ''}
+          ${processedResult.actions?.length > 0 ? `
+            <div style="background: rgba(156,39,176,0.2); padding: 6px 10px; border-radius: 6px; font-size: 12px;">
+              ⚡ ${processedResult.actions.length} action${processedResult.actions.length !== 1 ? 's' : ''} suggested
+            </div>
+          ` : ''}
+        </div>
+      </div>
+    `;
+    
+    showScoutNotification(notification, 7000, 'info');
+    
+    // If entities were found, highlight them
+    if (processedResult.entities && processedResult.entities.length > 0) {
+      highlightAnalysisEntities(processedResult.entities);
+    }
+    
+  } catch (error) {
+    console.error('Scout: Error handling OCR analysis result:', error);
+  }
+}
+
+// Helper function to highlight analysis entities on the page
+function highlightAnalysisEntities(entities) {
+  try {
+    entities.forEach(entity => {
+      if (entity.type === 'address' && entity.value) {
+        highlightAddressOnPage(entity.value, entity.confidence || 0.8);
+      } else if (entity.type === 'token' && entity.value) {
+        highlightTextOnPage(entity.value, 'token');
+      } else if (entity.type === 'protocol' && entity.value) {
+        highlightTextOnPage(entity.value, 'protocol');
+      }
+    });
+  } catch (error) {
+    console.error('Scout: Error highlighting analysis entities:', error);
+  }
+}
+
+// Helper function to highlight an address on the page
+function highlightAddressOnPage(address, riskScore) {
+  try {
+    const riskColor = riskScore > 0.7 ? '#ff6b6b' : 
+                     riskScore > 0.4 ? '#ffa726' : '#4caf50';
+    
+    // Find and highlight all instances of this address on the page
+    const walker = document.createTreeWalker(
+      document.body,
+      NodeFilter.SHOW_TEXT,
+      null,
+      false
+    );
+    
+    let node;
+    const addresses = [];
+    
+    while (node = walker.nextNode()) {
+      if (node.nodeValue.includes(address)) {
+        addresses.push(node);
+      }
+    }
+    
+    addresses.forEach(textNode => {
+      const parent = textNode.parentNode;
+      if (parent && !parent.classList.contains('scout-highlight')) {
+        const wrapper = document.createElement('span');
+        wrapper.className = 'scout-highlight scout-address-highlight';
+        wrapper.style.cssText = `
+          background: ${riskColor}20;
+          color: ${riskColor};
+          padding: 2px 4px;
+          border-radius: 3px;
+          font-weight: 600;
+          border: 1px solid ${riskColor}40;
+        `;
+        
+        parent.insertBefore(wrapper, textNode);
+        wrapper.appendChild(textNode);
+        
+        // Add to highlights for cleanup
+        scanHighlights.push(wrapper);
+      }
+    });
+  } catch (error) {
+    console.error('Scout: Error highlighting address:', error);
+  }
+}
+
+// Helper function to highlight text on the page
+function highlightTextOnPage(text, type) {
+  try {
+    const colors = {
+      token: '#9c27b0',
+      protocol: '#2196f3',
+      default: '#4caf50'
+    };
+    
+    const color = colors[type] || colors.default;
+    
+    // Find and highlight all instances of this text on the page
+    const walker = document.createTreeWalker(
+      document.body,
+      NodeFilter.SHOW_TEXT,
+      null,
+      false
+    );
+    
+    let node;
+    const matches = [];
+    
+    while (node = walker.nextNode()) {
+      if (node.nodeValue.toLowerCase().includes(text.toLowerCase())) {
+        matches.push(node);
+      }
+    }
+    
+    matches.forEach(textNode => {
+      const parent = textNode.parentNode;
+      if (parent && !parent.classList.contains('scout-highlight')) {
+        const wrapper = document.createElement('span');
+        wrapper.className = `scout-highlight scout-${type}-highlight`;
+        wrapper.style.cssText = `
+          background: ${color}20;
+          color: ${color};
+          padding: 2px 4px;
+          border-radius: 3px;
+          font-weight: 600;
+          border: 1px solid ${color}40;
+        `;
+        
+        parent.insertBefore(wrapper, textNode);
+        wrapper.appendChild(textNode);
+        
+        // Add to highlights for cleanup
+        scanHighlights.push(wrapper);
+      }
+    });
+  } catch (error) {
+    console.error('Scout: Error highlighting text:', error);
+  }
+}
+
+// Enhanced notification system for backend results
+function showScoutNotification(content, duration = 5000, type = 'info') {
+  try {
+    const colors = {
+      success: 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)',
+      error: 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)',
+      warning: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
+      info: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)'
+    };
+    
+    const notification = document.createElement('div');
+    notification.className = 'scout-notification';
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: ${colors[type] || colors.info};
+      color: white;
+      padding: 16px 20px;
+      border-radius: 12px;
+      z-index: 10001;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 14px;
+      box-shadow: 0 6px 25px rgba(0,0,0,0.15);
+      max-width: 400px;
+      animation: scoutSlideIn 0.3s ease-out;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.2);
+    `;
+    
+    if (typeof content === 'string') {
+      notification.innerHTML = content;
+    } else {
+      notification.appendChild(content);
+    }
+    
+    document.body.appendChild(notification);
+    
+    // Auto-remove notification
+    setTimeout(() => {
+      notification.style.animation = 'scoutSlideOut 0.3s ease-in forwards';
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.parentNode.removeChild(notification);
+        }
+      }, 300);
+    }, duration);
+    
+  } catch (error) {
+    console.error('Scout: Error showing notification:', error);
+  }
+}
+
+// Initialize Scout OCR Integration on content script load
+initializeScoutOCR();

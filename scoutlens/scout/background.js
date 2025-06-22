@@ -1,6 +1,209 @@
 // Scout - Web3 AI Agent Background Script (Service Worker)
 console.log('Scout extension started');
 
+// Scout Backend API Configuration
+const SCOUT_BACKEND_CONFIG = {
+  baseUrl: 'http://localhost:3001',
+  apiVersion: 'v1',
+  timeout: 30000,
+  retryAttempts: 3,
+  retryDelay: 1000
+};
+
+// ScoutBackendAPI Class for backend communication
+class ScoutBackendAPI {
+  constructor(config = SCOUT_BACKEND_CONFIG) {
+    this.baseUrl = config.baseUrl;
+    this.apiVersion = config.apiVersion;
+    this.timeout = config.timeout;
+    this.retryAttempts = config.retryAttempts;
+    this.retryDelay = config.retryDelay;
+    this.isHealthy = false;
+    this.lastHealthCheck = null;
+  }
+
+  // Health check
+  async checkHealth() {
+    try {
+      const response = await this.makeRequest('/health', {
+        method: 'GET',
+        timeout: 5000
+      });
+      
+      this.isHealthy = response.status === 'ok';
+      this.lastHealthCheck = Date.now();
+      
+      console.log('Scout Backend Health Check:', this.isHealthy ? 'HEALTHY' : 'UNHEALTHY');
+      return this.isHealthy;
+      
+    } catch (error) {
+      console.error('Scout Backend Health Check Failed:', error);
+      this.isHealthy = false;
+      this.lastHealthCheck = Date.now();
+      return false;
+    }
+  }
+
+  // Analyze Web3 content using LangGraph
+  async analyzeWeb3(data) {
+    try {
+      const response = await this.makeRequest('/api/analyze', {
+        method: 'POST',
+        body: JSON.stringify({
+          type: 'web3_analysis',
+          data: {
+            content: data.content,
+            url: data.url,
+            timestamp: Date.now(),
+            userQuery: data.userQuery || null,
+            context: data.context || {}
+          }
+        })
+      });      return {
+        success: true,
+        analysis: response.analysis,
+        entities: response.entities || [],
+        risks: response.risks || [],
+        opportunities: response.opportunities || [],
+        confidence: response.confidence || 0.8,
+        processingTime: response.processingTime
+      };
+
+    } catch (error) {
+      console.error('Scout Backend Analysis Error:', error);
+      throw new Error(`Analysis failed: ${error.message}`);
+    }
+  }
+
+  // Analyze address/token
+  async analyzeAddress(address, context = {}) {
+    try {
+      const response = await this.makeRequest('/api/address', {
+        method: 'POST',
+        body: JSON.stringify({
+          address: address,
+          context: context,
+          timestamp: Date.now()
+        })
+      });
+
+      return {
+        success: true,
+        address: response.address,
+        type: response.type, // 'wallet', 'contract', 'token', 'unknown'
+        analysis: response.analysis,
+        riskScore: response.riskScore || 0,
+        verification: response.verification || {},
+        metadata: response.metadata || {}
+      };
+
+    } catch (error) {
+      console.error('Scout Backend Address Analysis Error:', error);
+      throw new Error(`Address analysis failed: ${error.message}`);
+    }
+  }
+
+  // Process OCR results
+  async processOCR(ocrResults, context = {}) {
+    try {
+      const response = await this.makeRequest('/api/ocr', {
+        method: 'POST',
+        body: JSON.stringify({
+          ocrResults: ocrResults,
+          context: context,
+          timestamp: Date.now()
+        })
+      });
+
+      return {
+        success: true,
+        processedText: response.processedText,
+        entities: response.entities || [],
+        insights: response.insights || [],
+        actions: response.suggestedActions || []
+      };
+
+    } catch (error) {
+      console.error('Scout Backend OCR Processing Error:', error);
+      throw new Error(`OCR processing failed: ${error.message}`);
+    }
+  }
+
+  // Make HTTP request with retry logic and error handling
+  async makeRequest(endpoint, options = {}) {
+    const url = `${this.baseUrl}${endpoint}`;
+    const defaultOptions = {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'User-Agent': 'Scout-Extension/1.0.0'
+      },
+      timeout: this.timeout
+    };
+
+    const requestOptions = { ...defaultOptions, ...options };
+
+    for (let attempt = 1; attempt <= this.retryAttempts; attempt++) {
+      try {
+        console.log(`Scout Backend Request (Attempt ${attempt}/${this.retryAttempts}):`, url);
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), requestOptions.timeout);
+
+        const response = await fetch(url, {
+          ...requestOptions,
+          signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log('Scout Backend Response:', data);
+        return data;
+
+      } catch (error) {
+        console.error(`Scout Backend Request Failed (Attempt ${attempt}):`, error);
+
+        if (attempt === this.retryAttempts) {
+          throw error;
+        }
+
+        // Wait before retrying
+        await new Promise(resolve => setTimeout(resolve, this.retryDelay * attempt));
+      }
+    }
+  }
+
+  // Get backend status
+  getStatus() {
+    return {
+      isHealthy: this.isHealthy,
+      lastHealthCheck: this.lastHealthCheck,
+      baseUrl: this.baseUrl,
+      connected: this.isHealthy && (Date.now() - (this.lastHealthCheck || 0)) < 60000
+    };
+  }
+}
+
+// Initialize Scout Backend API
+const scoutBackend = new ScoutBackendAPI();
+
+// Perform initial health check
+scoutBackend.checkHealth().catch(error => {
+  console.warn('Scout Backend initial health check failed:', error);
+});
+
+// Periodic health checks (every 2 minutes)
+setInterval(() => {
+  scoutBackend.checkHealth().catch(error => {
+    console.warn('Scout Backend periodic health check failed:', error);
+  });
+}, 120000);
+
 // Scout wallet connection state
 let scoutWalletState = {
   connected: false,
@@ -41,12 +244,23 @@ chrome.runtime.onInstalled.addListener((details) => {
       alertsEnabled: true
     }
   });
-
   // Create Scout context menus
   chrome.contextMenus.create({
-    id: 'scoutScan',
-    title: '🔍 Scout: Scan for Tokens',
-    contexts: ['page', 'selection', 'image']
+    id: 'scoutOCRScan',
+    title: '🔍 Scout: OCR Scan Page',
+    contexts: ['page']
+  });
+
+  chrome.contextMenus.create({
+    id: 'scoutScanSelection',
+    title: '🔍 Scout: Scan Selection',
+    contexts: ['selection']
+  });
+
+  chrome.contextMenus.create({
+    id: 'scoutScanImage',
+    title: '📷 Scout: OCR Scan Image',  
+    contexts: ['image']
   });
 
   chrome.contextMenus.create({
@@ -56,22 +270,90 @@ chrome.runtime.onInstalled.addListener((details) => {
   });
 });
 
-// Handle context menu clicks
-chrome.contextMenus.onClicked.addListener((info, tab) => {
-  if (info.menuItemId === 'scoutScan') {
-    // Execute Scout scan on the current page
-    chrome.scripting.executeScript({
-      target: { tabId: tab.id },
-      function: () => {
-        // Trigger Scout scan from page context
-        window.postMessage({ 
-          type: 'SCOUT_CONTEXT_SCAN',
-          selectedText: window.getSelection().toString()
-        }, '*');
-      }
-    });
+// Handle keyboard commands
+chrome.commands.onCommand.addListener((command, tab) => {
+  console.log('Scout: Command received:', command);
+  
+  if (command === 'trigger_ocr_scan') {
+    triggerOCRScan(tab.id);
   }
 });
+
+// Handle context menu clicks
+chrome.contextMenus.onClicked.addListener((info, tab) => {
+  console.log('Scout: Context menu clicked:', info.menuItemId);
+  
+  switch (info.menuItemId) {
+    case 'scoutOCRScan':
+      triggerOCRScan(tab.id);
+      break;
+      
+    case 'scoutScanSelection':
+      triggerOCRScan(tab.id, { selectedText: info.selectionText });
+      break;
+      
+    case 'scoutScanImage':
+      triggerOCRScan(tab.id, { imageUrl: info.srcUrl });
+      break;
+      
+    case 'scoutAnalyze':
+      triggerAddressAnalysis(tab.id, info.selectionText);
+      break;
+  }
+});
+
+// Trigger OCR scan from background
+async function triggerOCRScan(tabId, options = {}) {
+  try {
+    console.log('Scout: Triggering OCR scan for tab:', tabId);
+    
+    // Send message to content script to perform OCR scan
+    const response = await chrome.tabs.sendMessage(tabId, {
+      type: 'TRIGGER_OCR_SCAN',
+      options: options
+    });
+    
+    if (response && response.success) {
+      console.log('Scout: OCR scan triggered successfully');
+      
+      // Show notification
+      chrome.notifications.create({
+        type: 'basic',
+        iconUrl: 'icons/icon16.svg',
+        title: 'Scout OCR Scan',
+        message: 'OCR scan started. Check the popup for results.'
+      });
+    } else {
+      throw new Error(response?.error || 'Failed to trigger OCR scan');
+    }
+    
+  } catch (error) {
+    console.error('Scout: Error triggering OCR scan:', error);
+    
+    // Show error notification
+    chrome.notifications.create({
+      type: 'basic',
+      iconUrl: 'icons/icon16.svg',
+      title: 'Scout OCR Scan Failed',
+      message: 'Failed to start OCR scan: ' + error.message
+    });
+  }
+}
+
+// Trigger address analysis
+async function triggerAddressAnalysis(tabId, selectedText) {
+  try {
+    console.log('Scout: Triggering address analysis for:', selectedText);
+      // Send message to content script to analyze address
+    await chrome.tabs.sendMessage(tabId, {
+      type: 'ANALYZE_ADDRESS',
+      address: selectedText.trim()
+    });
+    
+  } catch (error) {
+    console.error('Scout: Error triggering address analysis:', error);
+  }
+}
 
 // Web3 Wallet Connection Functions
 async function connectWallet(tabId) {
@@ -362,11 +644,23 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       handlePageData(message.data, sender.tab?.id);
       sendResponse({ success: true });
       break;
-        case 'SCROLL_UPDATE':
+    case 'SCROLL_UPDATE':
       handleScrollUpdate(message.data, sender.tab?.id);
       sendResponse({ success: true });
       break;
-        // Wallet popup messages (from in-page popup)
+      
+    case 'OCR_ANALYSIS':
+      handleOCRAnalysis(message.data, sender.tab?.id)
+        .then(result => sendResponse({ success: true, result }))
+        .catch(error => sendResponse({ success: false, error: error.message }));
+      return true;
+      
+    case 'OCR_SCAN_COMPLETE':
+      handleOCRScanComplete(message.data, sender.tab?.id);
+      sendResponse({ success: true });
+      break;
+      
+    // Wallet popup messages (from in-page popup)
     case 'WALLET_CONNECTED':
       handleWalletConnectedFromInPage(message.data, sender.tab?.id);
       sendResponse({ success: true });
@@ -376,10 +670,46 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       handleWalletErrorFromInPage(message.data, sender.tab?.id);
       sendResponse({ success: true });
       break;
-      
-    case 'WALLET_POPUP_CLOSED':
+        case 'WALLET_POPUP_CLOSED':
       handleWalletPopupClosedFromInPage(message.data, sender.tab?.id);
       sendResponse({ success: true });
+      break;
+        case 'OCR_SCAN_COMPLETE':
+      handleOCRScanComplete(message.data, sender.tab?.id);
+      sendResponse({ success: true });
+      break;
+        case 'ADDRESS_ANALYSIS_COMPLETE':
+      handleAddressAnalysisComplete(message.data, sender.tab?.id);
+      sendResponse({ success: true });
+      break;
+      
+    // Backend API Integration Message Handlers
+    case 'CHECK_BACKEND_HEALTH':
+      scoutBackend.checkHealth()
+        .then(isHealthy => sendResponse({ success: true, isHealthy, status: scoutBackend.getStatus() }))
+        .catch(error => sendResponse({ success: false, error: error.message }));
+      return true;
+      
+    case 'ANALYZE_WEB3':
+      handleAnalyzeWeb3(message.data, sender.tab?.id)
+        .then(result => sendResponse({ success: true, result }))
+        .catch(error => sendResponse({ success: false, error: error.message }));
+      return true;
+      
+    case 'ANALYZE_ADDRESS_BACKEND':
+      handleAnalyzeAddressBackend(message.address, message.context, sender.tab?.id)
+        .then(result => sendResponse({ success: true, result }))
+        .catch(error => sendResponse({ success: false, error: error.message }));
+      return true;
+      
+    case 'PROCESS_OCR_BACKEND':
+      handleProcessOCRBackend(message.ocrResults, message.context, sender.tab?.id)
+        .then(result => sendResponse({ success: true, result }))
+        .catch(error => sendResponse({ success: false, error: error.message }));
+      return true;
+      
+    case 'GET_BACKEND_STATUS':
+      sendResponse({ success: true, status: scoutBackend.getStatus() });
       break;
       
     default:
@@ -559,6 +889,38 @@ async function handleAddressAnalysis(data, tabId) {
     
   } catch (error) {
     console.error('Scout: Address analysis error:', error);
+    throw error;
+  }
+}
+
+// OCR analysis functionality
+async function handleOCRAnalysis(data, tabId) {
+  try {
+    console.log('Scout: Processing OCR analysis request:', data);
+    
+    // Store OCR request for processing
+    chrome.storage.local.set({
+      [`ocrRequest_${tabId}_${Date.now()}`]: {
+        ...data,
+        status: 'processing',
+        timestamp: Date.now()
+      }
+    });
+    
+    // Enhanced OCR analysis could integrate with:
+    // 1. Chrome Lens OCR for text extraction
+    // 2. Token recognition and price fetching
+    // 3. Address validation and risk assessment
+    // 4. Wallet integration for enhanced features
+    
+    return {
+      success: true,
+      processingId: `ocr_${tabId}_${Date.now()}`,
+      message: 'OCR analysis started'
+    };
+    
+  } catch (error) {
+    console.error('Scout: OCR analysis error:', error);
     throw error;
   }
 }
@@ -775,4 +1137,267 @@ async function handleWalletPopupClosed() {
   
   // Clean up stored popup window ID
   await chrome.storage.local.remove(['walletPopupWindowId']);
+}
+
+// Handle OCR scan completion from content script
+function handleOCRScanComplete(data, tabId) {
+  console.log('Scout: OCR scan completed on tab:', tabId, data);
+  
+  // Store OCR results for popup access
+  chrome.storage.local.set({
+    [`ocrResults_${tabId}`]: {
+      ...data,
+      timestamp: Date.now(),
+      tabId: tabId
+    }
+  });
+  
+  // Show notification based on trigger type  
+  const title = data.trigger === 'keyboard' ? 
+    'Scout OCR Scan (Keyboard)' : 
+    'Scout OCR Scan (Context Menu)';
+    
+  const message = data.results?.tokens?.length > 0 ?
+    `Found ${data.results.tokens.length} tokens and ${data.results.addresses?.length || 0} addresses` :
+    'OCR scan completed. Check popup for details.';
+  
+  chrome.notifications.create({
+    type: 'basic',
+    iconUrl: 'icons/icon16.svg',
+    title: title,
+    message: message
+  });
+  
+  // If popup is open, send results directly
+  chrome.runtime.sendMessage({
+    type: 'NEW_OCR_RESULTS',
+    data: data
+  }).catch(() => {
+    // Popup not open, results stored for later access
+    console.log('Scout: OCR results stored for popup access');
+  });
+}
+
+// Handle address analysis completion from content script
+function handleAddressAnalysisComplete(data, tabId) {
+  console.log('Scout: Address analysis completed on tab:', tabId, data);
+  
+  // Store analysis results for popup access
+  chrome.storage.local.set({
+    [`addressAnalysis_${tabId}`]: {
+      ...data,
+      timestamp: Date.now(),
+      tabId: tabId
+    }
+  });
+  
+  // Show notification
+  const message = `Address: ${data.address.substring(0, 8)}...${data.address.substring(-4)}
+Risk: ${data.analysis.risk} • Type: ${data.analysis.type}`;
+  
+  chrome.notifications.create({
+    type: 'basic',
+    iconUrl: 'icons/icon16.svg',
+    title: 'Scout Address Analysis Complete',
+    message: message
+  });
+  
+  // If popup is open, send results directly
+  chrome.runtime.sendMessage({
+    type: 'NEW_ADDRESS_ANALYSIS',
+    data: data
+  }).catch(() => {
+    // Popup not open, results stored for later access
+    console.log('Scout: Address analysis results stored for popup access');
+  });
+}
+
+// Backend API Message Handler Functions
+
+// Handle Web3 analysis request
+async function handleAnalyzeWeb3(data, tabId) {
+  try {
+    console.log('Scout: Handling Web3 analysis request:', data);
+    
+    // Check backend health first
+    const isHealthy = await scoutBackend.checkHealth();
+    if (!isHealthy) {
+      throw new Error('Scout backend is not available. Please ensure the backend server is running.');
+    }
+    
+    // Perform analysis using backend
+    const analysisResult = await scoutBackend.analyzeWeb3(data);
+    
+    // Store results for popup access
+    await chrome.storage.local.set({
+      [`analysis_${tabId}_${Date.now()}`]: {
+        type: 'web3_analysis',
+        result: analysisResult,
+        timestamp: Date.now(),
+        tabId: tabId,
+        url: data.url
+      }
+    });
+    
+    // Send results to content script for in-page display
+    if (tabId) {
+      chrome.tabs.sendMessage(tabId, {
+        type: 'WEB3_ANALYSIS_RESULT',
+        result: analysisResult,
+        source: 'backend'
+      }).catch(error => {
+        console.log('Scout: Could not send analysis to content script:', error.message);
+      });
+    }
+    
+    // Show notification
+    chrome.notifications.create({
+      type: 'basic',
+      iconUrl: 'icons/icon16.svg',
+      title: 'Scout Web3 Analysis Complete',
+      message: `Analysis complete. Found ${analysisResult.entities?.length || 0} entities with ${Math.round(analysisResult.confidence * 100)}% confidence.`
+    });
+    
+    return analysisResult;
+    
+  } catch (error) {
+    console.error('Scout: Web3 analysis handler error:', error);
+    
+    // Show error notification
+    chrome.notifications.create({
+      type: 'basic',
+      iconUrl: 'icons/icon16.svg',
+      title: 'Scout Analysis Failed',
+      message: `Analysis failed: ${error.message}`
+    });
+    
+    throw error;
+  }
+}
+
+// Handle address analysis with backend
+async function handleAnalyzeAddressBackend(address, context = {}, tabId) {
+  try {
+    console.log('Scout: Handling backend address analysis:', address);
+    
+    // Check backend health first
+    const isHealthy = await scoutBackend.checkHealth();
+    if (!isHealthy) {
+      throw new Error('Scout backend is not available. Please ensure the backend server is running.');
+    }
+    
+    // Perform address analysis using backend
+    const analysisResult = await scoutBackend.analyzeAddress(address, context);
+    
+    // Store results for popup access
+    await chrome.storage.local.set({
+      [`address_analysis_${tabId}_${Date.now()}`]: {
+        type: 'address_analysis',
+        address: address,
+        result: analysisResult,
+        timestamp: Date.now(),
+        tabId: tabId
+      }
+    });
+    
+    // Send results to content script for in-page display
+    if (tabId) {
+      chrome.tabs.sendMessage(tabId, {
+        type: 'ADDRESS_ANALYSIS_RESULT',
+        address: address,
+        result: analysisResult,
+        source: 'backend'
+      }).catch(error => {
+        console.log('Scout: Could not send address analysis to content script:', error.message);
+      });
+    }
+    
+    // Show notification with risk assessment
+    const riskLevel = analysisResult.riskScore > 0.7 ? 'HIGH' : 
+                     analysisResult.riskScore > 0.4 ? 'MEDIUM' : 'LOW';
+    
+    chrome.notifications.create({
+      type: 'basic',
+      iconUrl: 'icons/icon16.svg',
+      title: `Scout Address Analysis - ${riskLevel} Risk`,
+      message: `${analysisResult.type || 'Address'} analyzed. Risk Score: ${Math.round(analysisResult.riskScore * 100)}%`
+    });
+    
+    return analysisResult;
+    
+  } catch (error) {
+    console.error('Scout: Address analysis handler error:', error);
+    
+    // Show error notification
+    chrome.notifications.create({
+      type: 'basic',
+      iconUrl: 'icons/icon16.svg',
+      title: 'Scout Address Analysis Failed',
+      message: `Analysis failed: ${error.message}`
+    });
+    
+    throw error;
+  }
+}
+
+// Handle OCR processing with backend
+async function handleProcessOCRBackend(ocrResults, context = {}, tabId) {
+  try {
+    console.log('Scout: Handling backend OCR processing:', ocrResults);
+    
+    // Check backend health first
+    const isHealthy = await scoutBackend.checkHealth();
+    if (!isHealthy) {
+      throw new Error('Scout backend is not available. Please ensure the backend server is running.');
+    }
+    
+    // Process OCR results using backend
+    const processedResult = await scoutBackend.processOCR(ocrResults, context);
+    
+    // Store results for popup access
+    await chrome.storage.local.set({
+      [`ocr_analysis_${tabId}_${Date.now()}`]: {
+        type: 'ocr_analysis',
+        original: ocrResults,
+        result: processedResult,
+        timestamp: Date.now(),
+        tabId: tabId
+      }
+    });
+    
+    // Send results to content script for in-page display
+    if (tabId) {
+      chrome.tabs.sendMessage(tabId, {
+        type: 'OCR_ANALYSIS_RESULT',
+        original: ocrResults,
+        result: processedResult,
+        source: 'backend'
+      }).catch(error => {
+        console.log('Scout: Could not send OCR analysis to content script:', error.message);
+      });
+    }
+    
+    // Show notification
+    chrome.notifications.create({
+      type: 'basic',
+      iconUrl: 'icons/icon16.svg',
+      title: 'Scout OCR Analysis Complete',
+      message: `OCR processed. Found ${processedResult.entities?.length || 0} entities and ${processedResult.insights?.length || 0} insights.`
+    });
+    
+    return processedResult;
+    
+  } catch (error) {
+    console.error('Scout: OCR processing handler error:', error);
+    
+    // Show error notification
+    chrome.notifications.create({
+      type: 'basic',
+      iconUrl: 'icons/icon16.svg',
+      title: 'Scout OCR Processing Failed',
+      message: `Processing failed: ${error.message}`
+    });
+    
+    throw error;
+  }
 }
