@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scout Extension - Lens Mode Fix Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .test-section h2 {
+            color: #495057;
+            margin-bottom: 15px;
+        }
+        
+        .crypto-text {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+            border-left: 3px solid #2196f3;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-good { background: #4caf50; }
+        .status-bad { background: #f44336; }
+        
+        .test-instructions {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .test-instructions h3 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+        
+        .test-instructions ol {
+            margin-left: 20px;
+        }
+        
+        .test-instructions li {
+            margin: 5px 0;
+            color: #856404;
+        }
+        
+        .image-test {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .test-image {
+            max-width: 200px;
+            height: auto;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            margin: 10px;
+        }
+        
+        .background-test {
+            background: #ff6b6b;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .text-content {
+            line-height: 1.6;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Scout Extension - Lens Mode Fix Test</h1>
+        
+        <div class="test-instructions">
+            <h3>🧪 Test Instructions</h3>
+            <ol>
+                <li>Load the Scout extension in Chrome (chrome://extensions/)</li>
+                <li>Right-click anywhere on this page and select "Scan with Scout Lens"</li>
+                <li>Verify the page background remains colorful (not black/dark)</li>
+                <li>Check that the lens overlay appears at the top without covering content</li>
+                <li>Test OCR on the crypto text and images below</li>
+                <li>Close the lens mode and verify the page returns to normal</li>
+            </ol>
+        </div>
+        
+        <div class="test-section">
+            <h2>🎨 Background Preservation Test</h2>
+            <div class="background-test">
+                <strong>This box should stay RED even when lens mode is active!</strong>
+                <p>If this background turns dark/black, the lens overlay is interfering with the host page.</p>
+            </div>
+            <p><span class="status-indicator status-good"></span> <strong>Expected:</strong> Colorful gradient background and red box remain visible</p>
+            <p><span class="status-indicator status-bad"></span> <strong>Bug:</strong> Page background turns dark/black when lens mode is active</p>
+        </div>
+        
+        <div class="test-section">
+            <h2>💰 Crypto Text for OCR Testing</h2>
+            <div class="crypto-text">
+                <strong>Bitcoin (BTC)</strong> - $43,250.00 (+2.5%)
+                <br>Current market cap: $847.2B
+            </div>
+            <div class="crypto-text">
+                <strong>Ethereum (ETH)</strong> - $2,680.50 (-1.2%)
+                <br>Gas fees: 25 gwei | Network: Mainnet
+            </div>
+            <div class="crypto-text">
+                <strong>Solana (SOL)</strong> - $98.75 (+5.8%)
+                <br>TPS: 3,400 | Validator count: 1,847
+            </div>
+            <p>Right-click on the crypto text above to test OCR analysis.</p>
+        </div>
+        
+        <div class="test-section">
+            <h2>📸 Image OCR Test</h2>
+            <div class="image-test">
+                <p>Test OCR on these sample images:</p>
+                <div style="display: inline-block; margin: 10px; padding: 20px; background: #f0f0f0; border-radius: 8px;">
+                    <div style="font-size: 24px; font-weight: bold; color: #333;">SAMPLE TEXT</div>
+                    <div style="font-size: 16px; color: #666;">Price: $1,234.56</div>
+                </div>
+                <div style="display: inline-block; margin: 10px; padding: 20px; background: #e8f5e8; border-radius: 8px;">
+                    <div style="font-size: 20px; font-weight: bold; color: #2e7d32;">BUY SIGNAL</div>
+                    <div style="font-size: 14px; color: #4caf50;">+15.3% today</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>✅ Expected Behavior</h2>
+            <div class="text-content">
+                <p><strong>✅ Lens Overlay:</strong> Should appear at the top of the page with a clean, modern design</p>
+                <p><strong>✅ Background Preservation:</strong> The page's original background and colors should remain unchanged</p>
+                <p><strong>✅ OCR Functionality:</strong> Should work on both text and image elements</p>
+                <p><strong>✅ Close Button:</strong> Should be visible and functional</p>
+                <p><strong>✅ No Page Interference:</strong> Extension should not modify the host page's appearance</p>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🐛 Common Issues Fixed</h2>
+            <div class="text-content">
+                <p><strong>🔧 Fixed:</strong> Removed global CSS selectors that affected the entire page</p>
+                <p><strong>🔧 Fixed:</strong> Scoped all extension styles to only affect Scout elements</p>
+                <p><strong>🔧 Fixed:</strong> Prevented lens overlay from changing page background</p>
+                <p><strong>🔧 Fixed:</strong> Improved close button visibility and functionality</p>
+                <p><strong>🔧 Fixed:</strong> Added proper z-index and pointer-events management</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Add some dynamic content for testing
+        console.log('Scout Extension Test Page Loaded');
+        
+        // Test page interactions
+        document.addEventListener('contextmenu', function(e) {
+            console.log('Context menu triggered on:', e.target);
+        });
+        
+        // Monitor for style changes
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                    console.log('Style changed on:', mutation.target.tagName, mutation.target.style.cssText);
+                }
+            });
+        });
+        
+        observer.observe(document.body, { 
+            attributes: true, 
+            attributeFilter: ['style'],
+            subtree: true 
+        });
+    </script>
+</body>
+</html>

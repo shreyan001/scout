@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scout - Web3 AI Agent</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+    <div class="popup-container">
+        <header class="popup-header">
+            <h1>🔍 Scout</h1>
+        </header>
+
+        <main class="popup-main">
+            <!-- Wallet Address Section -->
+            <section class="wallet-section">
+                <h3>Wallet Address</h3>
+                <div class="wallet-input-group">
+                    <input 
+                        type="text" 
+                        id="walletAddressInput" 
+                        class="wallet-input" 
+                        placeholder="0x1234...abcd (optional)"
+                        maxlength="42"
+                    >
+                    <button id="saveAddressBtn" class="btn save-btn">Save</button>
+                    <button id="clearAddressBtn" class="btn clear-btn hidden">Clear</button>
+                </div>
+                
+                <div id="walletStatus" class="wallet-status hidden">
+                    <span class="status-icon">✓</span>
+                    <span id="storedAddress" class="stored-address">0x...</span>
+                </div>
+            </section>
+
+            <!-- Project Info Section -->
+            <section class="info-section">
+                <h3>About Scout</h3>
+                <p>Scout is a Web3 AI agent that analyzes blockchain content on web pages. It can extract wallet addresses, identify tokens, and perform risk analysis using advanced OCR technology.</p>
+                
+                <div class="features">
+                    <div class="feature-item">
+                        <span class="feature-icon">🔍</span>
+                        <span>Page Analysis</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">📷</span>
+                        <span>OCR Scanning</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">⚠️</span>
+                        <span>Risk Detection</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- OCR Details Section -->
+            <section class="ocr-section">
+                <h3>OCR Technology</h3>
+                <p>Our Optical Character Recognition system can:</p>
+                <ul>
+                    <li>Extract text from images and screenshots</li>
+                    <li>Identify wallet addresses in visual content</li>
+                    <li>Detect token contracts and smart contract addresses</li>
+                    <li>Analyze DeFi protocol interfaces</li>
+                </ul>
+                <div class="ocr-buttons">
+                    <button id="ocrScanBtn" class="btn primary-btn ocr-scan-btn">
+                        <span class="btn-icon">📷</span>
+                        <span class="btn-text">Start OCR Scan</span>
+                    </button>
+                    <button id="lensModeBtn" class="btn secondary-btn lens-mode-btn">
+                        <span class="btn-icon">🔍</span>
+                        <span class="btn-text">Lens Mode</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Results Section -->
+            <section id="scanResults" class="scan-results-section hidden">
+                <h3>Scan Results</h3>
+                <div id="resultsContainer" class="results-container">
+                    <!-- Results will be populated here -->
+                </div>
+            </section>
+        </main>
+
+        <footer class="popup-footer">
+            <div class="footer-status">
+                <span id="statusIndicator" class="status-indicator">●</span>
+                <span id="statusText" class="status-text">Ready</span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay hidden">
+        <div class="loading-spinner"></div>
+        <p id="loadingText">Processing...</p>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script src="ocr-processor.js"></script>
+    <script src="popup.js"></script>
+</body>
+</html>

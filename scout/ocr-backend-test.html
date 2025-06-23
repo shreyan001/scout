@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Scout OCR Backend Integration Test</title>
+    <style>
+        body { font-family: 'Geist', Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 30px 0; padding: 20px; border: 1px solid #ddd; }
+        .crypto-image { max-width: 300px; margin: 10px; border: 2px solid #0066cc; }
+        .test-button { padding: 12px 24px; margin: 10px; background: #0066cc; color: white; border: none; cursor: pointer; }
+        .result { margin: 15px 0; padding: 15px; background: #f8f9fa; border-left: 4px solid #0066cc; }
+        .status { font-weight: bold; margin: 10px 0; }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .warning { color: #ffc107; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Scout OCR + Backend Integration Test</h1>
+    
+    <div class="test-section">
+        <h2>System Status Check</h2>
+        <button class="test-button" onclick="checkSystemStatus()">Check System Status</button>
+        <div id="status-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>OCR Image Analysis Test</h2>
+        <p>Right-click on these crypto images and select "🚀 Analyze with Scout AI" or use Ctrl+Shift+L for lens mode:</p>
+        
+        <!-- Simulated crypto chart images -->
+        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzAwMjEzMyIvPgogIDx0ZXh0IHg9IjEwIiB5PSIzMCIgZmlsbD0iIzAwZDRmZiIgZm9udC1zaXplPSIyMCI+U09MIC8gVVNEQzwvdGV4dD4KICA8dGV4dCB4PSIxMCIgeT0iNjAiIGZpbGw9IiMwMGQ0ZmYiIGZvbnQtc2l6ZT0iMjQiPiQ5OC40NTwvdGV4dD4KICA8dGV4dCB4PSIxMCIgeT0iOTAiIGZpbGw9IiMyOGE3NDUiIGZvbnQtc2l6ZT0iMTYiPis1LjIlPC90ZXh0PgogIDx0ZXh0IHg9IjEwIiB5PSIxMzAiIGZpbGw9IiNmZmZmZmYiIGZvbnQtc2l6ZT0iMTQiPkpVUCAkMC44NTwvdGV4dD4KICA8dGV4dCB4PSIxMCIgeT0iMTUwIiBmaWxsPSIjMjhhNzQ1IiBmb250LXNpemU9IjE0Ij4rMTIuMyU8L3RleHQ+CiAgPHRleHQgeD0iMTAiIHk9IjE4MCIgZmlsbD0iI2ZmZmZmZiIgZm9udC1zaXplPSIxMiI+Qk9OSyAkMC4wMDAwMTg8L3RleHQ+Cjwvc3ZnPg==" 
+             alt="SOL trading chart showing $98.45 +5.2%, JUP $0.85 +12.3%, BONK $0.000018" 
+             class="crypto-image" 
+             title="Crypto Portfolio Display" />
+        
+        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzE2MTYxNiIvPgogIDx0ZXh0IHg9IjEwIiB5PSIzMCIgZmlsbD0iI2ZmNjYwMCIgZm9udC1zaXplPSIxOCI+U2NvdXQgQWdncmVnYXRvcjwvdGV4dD4KICA8dGV4dCB4PSIxMCIgeT0iNjAiIGZpbGw9IiNmZmZmZmYiIGZvbnQtc2l6ZT0iMTYiPjUgU09MIOKGkiA0NTAgSlVQPC90ZXh0PgogIDx0ZXh0IHg9IjEwIiB5PSI5MCIgZmlsbD0iIzI4YTc0NSIgZm9udC1zaXplPSIxNCI+U2xpcHBhZ2U6IDAuMSUg4pyFPC90ZXh0PgogIDx0ZXh0IHg9IjEwIiB5PSIxMjAiIGZpbGw9IiNmZmZmZmYiIGZvbnQtc2l6ZT0iMTQiPkZlZTogJDAuNDU8L3RleHQ+CiAgPHRleHQgeD0iMTAiIHk9IjE2MCIgZmlsbD0iIzAwZDRmZiIgZm9udC1zaXplPSIxMiI+QmVzdCBSb3V0ZSBGb3VuZDwvdGV4dD4KPC9zdmc+" 
+             alt="Scout aggregator swap route 5 SOL to 450 JUP with 0.1% slippage" 
+             class="crypto-image" 
+             title="Trading Interface" />
+             
+        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzAwMTEyMiIvPgogIDx0ZXh0IHg9IjEwIiB5PSIzMCIgZmlsbD0iI2ZmZDA0YSIgZm9udC1zaXplPSIxOCI+VHJhZGluZyBTaWduYWw8L3RleHQ+CiAgPHRleHQgeD0iMTAiIHk9IjYwIiBmaWxsPSIjZmZmZmZmIiBmb250LXNpemU9IjE2Ij5Mb25nIFNPTC9VU0RDPC90ZXh0PgogIDx0ZXh0IHg9IjEwIiB5PSI5MCIgZmlsbD0iIzI4YTc0NSIgZm9udC1zaXplPSIxNCI+RW50cnk6ICQ5NS4yMDwvdGV4dD4KICA8dGV4dCB4PSIxMCIgeT0iMTIwIiBmaWxsPSIjMjhhNzQ1IiBmb250LXNpemU9IjE0Ij5UYXJnZXQ6ICQxMDIuNTA8L3RleHQ+CiAgPHRleHQgeD0iMTAiIHk9IjE1MCIgZmlsbD0iI2RjMzU0NSIgZm9udC1zaXplPSIxNCI+U3RvcDogJDkyLjAwPC90ZXh0PgogIDx0ZXh0IHg9IjEwIiB5PSIxODAiIGZpbGw9IiMwMGQ0ZmYiIGZvbnQtc2l6ZT0iMTIiPkNvbmZpZGVuY2U6IDg1JTwvdGV4dD4KPC9zdmc+" 
+             alt="Trading signal Long SOL/USDC entry $95.20 target $102.50 stop $92.00" 
+             class="crypto-image" 
+             title="Trading Signal Display" />
+    </div>
+    
+    <div class="test-section">
+        <h2>Direct Text Analysis Test</h2>
+        <textarea id="test-text" rows="4" cols="60" placeholder="Enter crypto-related text to analyze...">hey that's my KAITO token worth $45.67</textarea><br>
+        <button class="test-button" onclick="testTextAnalysis()">Analyze Text</button>
+        <div id="text-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Backend Health Test</h2>
+        <button class="test-button" onclick="testBackendHealth()">Test Backend Connection</button>
+        <div id="health-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Instructions</h2>
+        <ol>
+            <li><strong>Start Backend:</strong> Make sure your Scout backend server is running on <code>http://localhost:3001</code></li>
+            <li><strong>Load Extension:</strong> Install the Scout extension in Chrome</li>
+            <li><strong>Test OCR:</strong> Right-click on crypto images above → "🚀 Analyze with Scout AI"</li>
+            <li><strong>Test Lens Mode:</strong> Press <code>Ctrl+Shift+L</code> to activate lens mode, then click on images</li>
+            <li><strong>Check Console:</strong> Open browser console (F12) for detailed logs</li>
+            <li><strong>Verify Integration:</strong> Ensure OCR text is sent to backend and results are displayed</li>
+        </ol>
+        
+        <h3>Expected Flow:</h3>
+        <p>Image → OCR Extraction → Backend Analysis → Rich Results Display</p>
+    </div>
+
+    <script>
+        console.log('🧪 Scout OCR + Backend Integration Test Page Ready');
+        
+        async function checkSystemStatus() {
+            const resultDiv = document.getElementById('status-result');
+            resultDiv.innerHTML = 'Checking system status...';
+            
+            try {
+                // Check if Scout OCR is available
+                const scoutOCR = window.ScoutOCR;
+                if (!scoutOCR) {
+                    throw new Error('Scout OCR Integration not available');
+                }
+                
+                const status = scoutOCR.getStatus();
+                const statusHtml = `
+                    <div class="status ${status.ready ? 'success' : 'warning'}">
+                        System Status: ${status.ready ? '✅ Ready' : '⚠️ Not Ready'}
+                    </div>
+                    <ul>
+                        <li class="${status.initialized ? 'success' : 'error'}">Initialized: ${status.initialized ? '✅' : '❌'}</li>
+                        <li class="${status.processor ? 'success' : 'warning'}">Processor: ${status.processor ? '✅' : '⚠️'}</li>
+                        <li class="${status.worker ? 'success' : 'warning'}">Worker: ${status.worker ? '✅' : '⚠️'}</li>
+                        <li class="${status.backend ? 'success' : 'error'}">Backend: ${status.backend ? '✅' : '❌'}</li>
+                    </ul>
+                `;
+                resultDiv.innerHTML = statusHtml;
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="status error">❌ Error: ${error.message}</div>`;
+            }
+        }
+        
+        async function testTextAnalysis() {
+            const resultDiv = document.getElementById('text-result');
+            const text = document.getElementById('test-text').value;
+            
+            if (!text.trim()) {
+                resultDiv.innerHTML = '<div class="status warning">⚠️ Please enter some text to analyze</div>';
+                return;
+            }
+            
+            resultDiv.innerHTML = 'Analyzing text...';
+            
+            try {
+                const response = await fetch('http://localhost:3001/api/process', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: text })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const result = data.result;
+                    resultDiv.innerHTML = `
+                        <div class="status success">✅ Analysis Successful</div>
+                        <p><strong>Detected Tokens:</strong> ${result.detectedTokens?.join(', ') || 'None'}</p>
+                        <p><strong>Detected Contracts:</strong> ${result.detectedContracts?.join(', ') || 'None'}</p>
+                        <p><strong>Classification:</strong> ${result.classification || 'Unknown'}</p>
+                        <p><strong>Confidence:</strong> ${Math.round((result.confidence || 0) * 100)}%</p>
+                        <p><strong>MCP Connected:</strong> ${result.mcpConnected ? '✅' : '❌'}</p>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div class="status error">❌ Analysis Failed: ${data.error}</div>`;
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="status error">❌ Error: ${error.message}</div>`;
+            }
+        }
+        
+        async function testBackendHealth() {
+            const resultDiv = document.getElementById('health-result');
+            resultDiv.innerHTML = 'Testing backend health...';
+            
+            try {
+                const response = await fetch('http://localhost:3001/health');
+                const data = await response.json();
+                
+                if (data.status === 'OK') {
+                    resultDiv.innerHTML = `
+                        <div class="status success">✅ Backend Healthy</div>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div class="status warning">⚠️ Backend Status: ${data.status}</div>`;
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="status error">❌ Backend Connection Failed</div>
+                    <p>Make sure your Scout backend server is running on http://localhost:3001</p>
+                    <p>Error: ${error.message}</p>
+                `;
+            }
+        }
+        
+        // Auto-check status on page load
+        setTimeout(() => {
+            if (window.ScoutOCR) {
+                checkSystemStatus();
+            } else {
+                console.log('⏳ Waiting for Scout OCR to initialize...');
+                setTimeout(checkSystemStatus, 2000);
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

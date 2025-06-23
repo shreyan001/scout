@@ -1,0 +1,1487 @@
+/* THIS IS THE ACTIVE CSS FILE USED BY THE EXTENSION */
+/* Modern shadcn/ui + Vercel Style with sharp borders and zero radius */
+
+/* Import Geist font */
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 240 9% 9%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 10% 3.9%;
+    --radius: 0;
+}
+
+.Scout-overlay *, 
+.Scout-lens-overlay *,
+.Scout-notification *,
+.Scout-quick-hint *,
+.Scout-tooltip * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.Scout-overlay {
+    font-family: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    background: hsl(var(--background)) !important;
+    color: hsl(var(--foreground)) !important;
+}
+
+/* === SAFETY OVERRIDES === */
+/* Ensure no Scout elements affect the page background */
+.Scout-overlay {
+  /* Prevent any background bleeding */
+  background: transparent !important;
+  /* Ensure overlay doesn't affect page flow */
+  position: fixed !important;
+  /* Prevent interference with page content */
+  pointer-events: none !important;
+}
+
+.Scout-overlay * {
+  /* Prevent any child elements from affecting page background */
+  background-color: initial !important;
+}
+
+/* Only the backdrop and content should have backgrounds */
+.Scout-overlay-backdrop {
+  /* Ensure backdrop has proper background */
+  background: rgba(255, 255, 255, 0.6) !important;
+  pointer-events: all !important;
+}
+
+.Scout-overlay-content {
+  /* Ensure content has proper background */
+  background: hsl(var(--card)) !important;
+  pointer-events: all !important;
+}
+
+/* Dark mode backdrop override */
+@media (prefers-color-scheme: dark) {
+  .Scout-overlay-backdrop {
+    background: rgba(15, 23, 42, 0.6) !important;
+  }
+}
+
+/* === ENSURE NO GLOBAL INTERFERENCE === */
+/* Make sure no Scout classes affect the page itself */
+html:not(.Scout-overlay) {
+  background: initial !important;
+}
+
+body:not(.Scout-overlay) {
+  background: initial !important;
+}
+
+/* Lens mode safety */
+.Scout-lens-overlay {
+  /* Ensure lens overlay doesn't affect page background */
+  background: hsl(var(--card)) !important;
+  /* Only affect the top bar area */
+  position: fixed !important;
+  bottom: auto !important;
+  height: auto !important;
+}
+
+.Scout-overlay-content, .Scout-sentiment-analysis, .Scout-sentiment-badge, .Scout-btn-icon, .Scout-header, .Scout-analysis-container, .Scout-results-container, .Scout-loading-state, .Scout-progress-bar, .Scout-progress-fill, .Scout-header-actions, .Scout-logo, .Scout-logo-icon, .Scout-overlay-backdrop, .Scout-sentiment-header, .Scout-confidence-bar, .Scout-loading-text, .Scout-loading-primary, .Scout-loading-secondary, .Scout-activity-list, .Scout-activity-empty, .Scout-btn, .Scout-btn-icon, .Scout-section, .Scout-setting, .Scout-setting-label, .Scout-feature, .Scout-feature-icon, .Scout-feature-content, .Scout-feature-title, .Scout-feature-desc {
+    border-radius: var(--radius) !important;
+}
+
+.Scout-overlay-content, .Scout-sentiment-analysis, .Scout-header, .Scout-analysis-container, .Scout-results-container, .Scout-loading-state {
+  background: hsl(var(--card)) !important;
+  color: hsl(var(--foreground)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+}
+
+/* === MAIN OVERLAY === */
+.Scout-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 2147483647 !important;
+  font-family: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  pointer-events: none !important;
+  animation: ScoutOverlayFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.Scout-overlay-backdrop {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: rgba(255, 255, 255, 0.6) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  pointer-events: all !important;
+}
+
+/* Dark mode backdrop */
+@media (prefers-color-scheme: dark) {
+  .Scout-overlay-backdrop {
+    background: rgba(15, 23, 42, 0.6) !important;
+  }
+}
+
+.Scout-overlay-content {
+  position: absolute !important;
+  width: 420px !important;
+  max-height: 600px !important;
+  background: hsl(var(--card)) !important;
+  color: hsl(var(--card-foreground)) !important;  border-radius: var(--radius) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.1), 0 1px 2px -1px rgba(15, 23, 42, 0.1) !important;
+  overflow: hidden !important;
+  pointer-events: all !important;
+  animation: ScoutContentSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  transform-origin: center !important;
+}
+
+@keyframes ScoutOverlayFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes ScoutContentSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.Scout-overlay-closing {
+  animation: ScoutOverlayFadeOut 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
+}
+
+.Scout-overlay-closing .Scout-overlay-content {
+  animation: ScoutContentSlideOut 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
+}
+
+@keyframes ScoutOverlayFadeOut {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes ScoutContentSlideOut {
+  to {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+}
+
+/* === HEADER === */
+.Scout-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 16px 20px !important;
+  background: hsl(var(--card)) !important;
+  color: hsl(var(--card-foreground)) !important;
+  border-bottom: 1px solid hsl(var(--border)) !important;
+  border-radius: var(--radius) var(--radius) 0 0 !important;
+}
+
+.Scout-logo {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  color: hsl(var(--primary)) !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+}
+
+.Scout-logo-icon {
+  font-size: 20px !important;
+  color: hsl(var(--primary)) !important;
+}
+
+@keyframes ScoutLogoRotate {
+  from {
+    transform: rotate(-5deg);
+  }
+  to {
+    transform: rotate(5deg);
+  }
+}
+
+.Scout-header-actions {
+  display: flex !important;
+  gap: 8px !important;
+}
+
+.Scout-header-actions .Scout-btn-icon,
+.Scout-btn-icon {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: var(--radius) !important;
+  background: hsl(var(--secondary)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  color: hsl(var(--secondary-foreground)) !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 16px !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+}
+
+.Scout-btn-icon:hover {
+  background: hsl(var(--accent)) !important;
+  transform: scale(1.05) !important;
+}
+
+.Scout-btn-icon:active {
+  transform: scale(0.95) !important;
+}
+
+/* Specific styles for the close button */
+.Scout-header-actions .Scout-btn[data-action="close"] {
+  background: hsl(var(--secondary)) !important;
+  color: hsl(var(--foreground)) !important;
+  border-color: hsl(var(--border)) !important;
+}
+
+.Scout-header-actions .Scout-btn[data-action="close"]:hover {
+  background: hsl(var(--destructive)) !important;
+  color: hsl(var(--destructive-foreground)) !important;
+  border-color: hsl(var(--destructive)) !important;
+}
+
+/* Additional specific style for the close button */
+.Scout-close-button {
+  background: hsl(var(--secondary)) !important; 
+  color: hsl(var(--foreground)) !important;
+  z-index: 2147483647 !important;
+}
+
+.Scout-close-button:hover {
+  background: hsl(var(--destructive)) !important;
+  color: hsl(var(--destructive-foreground)) !important;
+}
+
+/* Ensure the close button span is white */
+.Scout-close-button span,
+.Scout-header-actions .Scout-btn[data-action="close"] span {
+  color: hsl(var(--foreground)) !important;
+  font-weight: bold !important;
+  font-size: 18px !important;
+}
+
+.Scout-close-button:hover span,
+.Scout-header-actions .Scout-btn[data-action="close"]:hover span {
+  color: hsl(var(--destructive-foreground)) !important;
+}
+
+/* === ANALYSIS CONTAINER === */
+.Scout-analysis-container {
+  padding: 20px !important;
+  min-height: 200px !important;
+  max-height: 500px !important;
+  overflow-y: auto !important;
+}
+
+/* === LOADING STATE === */
+.Scout-loading-state {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 40px 20px !important;
+  text-align: center !important;
+}
+
+.Scout-loading-spinner {
+  width: 48px !important;
+  height: 48px !important;
+  border: 4px solid hsl(var(--secondary)) !important;  border-top: 4px solid hsl(var(--primary)) !important;
+  border-radius: var(--radius) !important;
+  animation: ScoutSpin 1s linear infinite !important;
+  margin-bottom: 20px !important;
+}
+
+@keyframes ScoutSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.Scout-loading-text {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+}
+
+.Scout-loading-primary {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+.Scout-loading-secondary {
+  font-size: 14px !important;
+  color: hsl(var(--muted-foreground)) !important;
+}
+
+/* === RESULTS CONTAINER === */
+.Scout-results-container {
+  animation: ScoutResultsFadeIn 0.4s ease-out !important;
+}
+
+@keyframes ScoutResultsFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* === SENTIMENT ANALYSIS === */
+.Scout-sentiment-analysis {
+  background: hsl(var(--card)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  border-radius: var(--radius) !important;
+  padding: 20px !important;
+  margin-bottom: 24px !important;
+}
+
+.Scout-sentiment-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin-bottom: 16px !important;
+}
+
+.Scout-sentiment-header h3 {
+  margin: 0 !important;  font-size: 18px !important;
+  font-weight: 600 !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+.Scout-sentiment-badge {
+  padding: 8px 16px !important;
+  border-radius: var(--radius) !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+}
+
+.Scout-sentiment-positive {
+  background: hsl(142.1 76.2% 36.3%) !important;
+  color: hsl(120 100% 98%) !important;
+  border: 1px solid hsl(142.1 76.2% 45%) !important;
+}
+
+.Scout-sentiment-negative {
+  background: hsl(0 84.2% 60.2%) !important;
+  color: hsl(0 0% 98%) !important;
+  border: 1px solid hsl(0 84.2% 65%) !important;
+}
+
+.Scout-sentiment-neutral {
+  background: hsl(var(--secondary)) !important;
+  color: hsl(var(--secondary-foreground)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+}
+
+.Scout-confidence-bar {
+  margin-bottom: 12px !important;
+}
+
+.Scout-confidence-bar span {
+  font-size: 14px !important;  font-weight: 500 !important;
+  color: hsl(var(--muted-foreground)) !important;
+  margin-bottom: 8px !important;
+  display: block !important;
+}
+
+.Scout-progress-bar {  width: 100% !important;
+  height: 8px !important;
+  background: hsl(var(--secondary)) !important;
+  border-radius: var(--radius) !important;
+  overflow: hidden !important;
+}
+
+.Scout-progress-fill {
+  height: 100% !important;  background: hsl(var(--primary)) !important;
+  border-radius: var(--radius) !important;
+  transition: width 0.8s ease-out !important;
+  animation: ScoutProgressFill 0.8s ease-out !important;
+}
+
+@keyframes ScoutProgressFill {
+  from {
+    width: 0%;
+  }
+}
+
+.Scout-sentiment-reasoning {
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+  color: hsl(var(--muted-foreground)) !important;
+  margin: 0 !important;
+  font-style: italic !important;
+}
+
+/* === TOKEN CARDS === */
+.Scout-tokens-section {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
+}
+
+.Scout-token-card {
+  background: hsl(var(--card)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  border-radius: var(--radius) !important;
+  padding: 20px !important;
+  transition: all 0.3s ease !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.Scout-token-card::before {
+  content: '' !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;  right: 0 !important;
+  height: 3px !important;
+  background: hsl(var(--primary)) !important;
+  opacity: 0 !important;
+  transition: opacity 0.3s ease !important;
+}
+
+.Scout-token-card:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.1), 0 1px 2px -1px rgba(15, 23, 42, 0.1) !important;
+  border-color: hsl(var(--accent)) !important;
+}
+
+.Scout-token-card:hover::before {
+  opacity: 1 !important;
+}
+
+.Scout-token-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin-bottom: 16px !important;
+}
+
+.Scout-token-header h4 {
+  margin: 0 !important;
+  font-size: 20px !important;
+  font-weight: 700 !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+.Scout-token-actions {
+  display: flex !important;
+  gap: 8px !important;
+}
+
+.Scout-btn-sm {
+  padding: 6px 12px !important;
+  font-size: 12px !important;
+  border-radius: var(--radius) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  background: hsl(var(--secondary)) !important;
+  color: hsl(var(--secondary-foreground)) !important;
+  cursor: pointer !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+}
+
+.Scout-btn-sm:hover {
+  background: hsl(var(--accent)) !important;
+  border-color: hsl(var(--accent)) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* === TOKEN DATA === */
+.Scout-token-info {
+  animation: ScoutTokenDataFadeIn 0.4s ease-out !important;
+}
+
+@keyframes ScoutTokenDataFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.Scout-price-display {
+  text-align: center !important;
+  margin-bottom: 20px !important;  padding: 20px !important;
+  background: hsl(var(--card)) !important;
+  border-radius: var(--radius) !important;
+  border: 1px solid hsl(var(--border)) !important;
+}
+
+.Scout-price-value {
+  display: block !important;
+  font-size: 28px !important;
+  font-weight: 700 !important;
+  color: hsl(var(--foreground)) !important;
+  margin-bottom: 4px !important;
+}
+
+.Scout-price-label {
+  font-size: 14px !important;
+  color: hsl(var(--muted-foreground)) !important;
+  font-weight: 500 !important;
+}
+
+.Scout-token-details {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  margin-bottom: 20px !important;
+}
+
+.Scout-detail-item {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 12px 16px !important;
+  background: hsl(var(--muted)) !important;
+  border-radius: var(--radius) !important;
+  border: 1px solid hsl(var(--border)) !important;
+}
+
+.Scout-label {
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  color: hsl(var(--muted-foreground)) !important;
+}
+
+.Scout-value {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+.Scout-address {
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace !important;
+  background: hsl(var(--muted)) !important;
+  padding: 4px 8px !important;
+  border-radius: var(--radius) !important;
+  font-size: 12px !important;
+  color: hsl(var(--muted-foreground)) !important;
+}
+
+/* === BUTTONS === */
+.Scout-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  border-radius: var(--radius) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+  cursor: pointer !important;
+  border: 1px solid transparent !important;
+  padding: 8px 12px !important;
+  text-decoration: none !important;
+  font-family: inherit !important;
+  white-space: nowrap !important;
+}
+
+.Scout-btn:hover {
+  opacity: 0.9 !important;
+}
+
+.Scout-btn:focus-visible {
+  outline: 2px solid hsl(var(--ring)) !important;
+  outline-offset: 2px !important;
+}
+
+.Scout-btn-primary {
+  background: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-foreground)) !important;
+}
+
+.Scout-btn-primary:hover {
+  background: hsl(var(--primary) / 0.9) !important;
+}
+
+.Scout-btn-secondary {
+  background: hsl(var(--secondary)) !important;
+  color: hsl(var(--secondary-foreground)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+}
+
+.Scout-btn-secondary:hover {
+  background: hsl(var(--accent)) !important;
+  color: hsl(var(--accent-foreground)) !important;
+}
+
+/* === LOADING STATES === */
+.Scout-token-loading {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 12px !important;
+  padding: 20px !important;
+  color: hsl(var(--muted-foreground)) !important;
+  font-size: 14px !important;
+}
+
+.Scout-mini-spinner {
+  width: 16px !important;
+  height: 16px !important;
+  border: 2px solid hsl(var(--secondary)) !important;
+  border-top: 2px solid hsl(var(--primary)) !important;
+  border-radius: var(--radius) !important;
+  animation: ScoutSpin 1s linear infinite !important;
+}
+
+/* === ERROR STATES === */
+.Scout-error-state,
+.Scout-no-results {
+  text-align: center !important;
+  padding: 40px 20px !important;
+}
+
+.Scout-error-icon,
+.Scout-no-results-icon {
+  font-size: 48px !important;
+  margin-bottom: 16px !important;
+  display: block !important;
+}
+
+.Scout-error-state h3,
+.Scout-no-results h3 {
+  margin: 0 0 12px 0 !important;
+  font-size: 20px !important;
+  font-weight: 600 !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+.Scout-error-state p,
+.Scout-no-results p {
+  margin: 0 0 20px 0 !important;
+  font-size: 14px !important;
+  color: hsl(var(--muted-foreground)) !important;
+  line-height: 1.5 !important;
+}
+
+.Scout-suggestion {
+  background: hsl(var(--muted)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  border-radius: var(--radius) !important;
+  padding: 16px !important;
+  margin-top: 16px !important;
+}
+
+.Scout-token-examples {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  justify-content: center !important;
+  margin-top: 12px !important;
+}
+
+.Scout-token-tag {  background: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-foreground)) !important;
+  padding: 4px 10px !important;
+  border-radius: var(--radius) !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+}
+
+.Scout-error-message {  color: hsl(var(--destructive)) !important;
+  background: rgba(239, 68, 68, 0.1) !important;
+  border: 1px solid rgba(239, 68, 68, 0.3) !important;
+  border-radius: var(--radius) !important;
+  padding: 12px 16px !important;
+  font-size: 14px !important;
+  text-align: center !important;
+}
+
+/* === FOOTER === */
+.Scout-footer {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 16px 24px !important;
+  background: hsl(var(--muted) / 0.5) !important;
+  border-top: 1px solid hsl(var(--border)) !important;
+  font-size: 12px !important;
+  color: hsl(var(--muted-foreground)) !important;
+}
+
+/* === LENS MODE === */
+.Scout-lens-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 2147483646 !important;
+  background: hsl(var(--card)) !important;
+  border-bottom: 1px solid hsl(var(--border)) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  color: hsl(var(--foreground)) !important;
+  font-family: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;  animation: ScoutLensSlideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.1) !important;
+  pointer-events: auto !important;
+}
+
+@keyframes ScoutLensSlideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.Scout-lens-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 16px 24px !important;
+}
+
+.Scout-lens-title {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  font-size: 18px !important;
+  font-weight: 600 !important;
+}
+
+.Scout-lens-icon {
+  font-size: 24px !important;
+  animation: ScoutLensPulse 2s ease-in-out infinite !important;
+}
+
+@keyframes ScoutLensPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.Scout-lens-controls {
+  display: flex !important;
+  gap: 12px !important;
+}
+
+.Scout-lens-btn {
+  padding: 8px 16px !important;
+  background: hsl(var(--secondary)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  border-radius: var(--radius) !important;
+  color: hsl(var(--foreground)) !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.Scout-lens-btn:hover {
+  background: hsl(var(--accent)) !important;
+  color: hsl(var(--accent-foreground)) !important;
+  transform: translateY(-1px) !important;
+}
+
+.Scout-lens-instructions {
+  text-align: center !important;
+  padding: 12px 24px !important;
+  font-size: 14px !important;
+  color: hsl(var(--muted-foreground)) !important;
+  border-top: 1px solid hsl(var(--border)) !important;
+}
+
+/* === SCAN LINE EFFECT === */
+.Scout-scan-line {
+  position: fixed !important;
+  left: 0 !important;
+  right: 0 !important;
+  height: 2px !important;
+  background: linear-gradient(90deg, transparent, hsl(var(--primary)), transparent) !important;
+  z-index: 2147483645 !important;
+  pointer-events: none !important;
+  box-shadow: 0 0 20px hsl(var(--primary)) !important;
+  opacity: 0.8 !important;
+}
+
+/* === HIGHLIGHTED ELEMENTS === */
+.Scout-highlighted {
+  outline: 3px solid #00d4ff !important;
+  outline-offset: 2px !important;
+  background: rgba(0, 212, 255, 0.1) !important;
+  animation: ScoutHighlight 2s ease-out forwards !important;
+}
+
+@keyframes ScoutHighlight {
+  0% {
+    outline-color: #00d4ff;
+    background: rgba(0, 212, 255, 0.2);
+  }
+  100% {
+    outline-color: transparent;
+    background: transparent;
+  }
+}
+
+/* === QUICK HINT === */
+.Scout-quick-hint {
+  position: fixed !important;
+  z-index: 2147483644 !important;
+  background: hsl(var(--card)) !important;
+  border: 1px solid hsl(var(--border)) !important;  border-radius: var(--radius) !important;
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.1), 0 1px 2px -1px rgba(15, 23, 42, 0.1) !important;
+  padding: 12px 16px !important;
+  cursor: pointer !important;
+  animation: ScoutHintFadeIn 0.3s ease-out !important;
+  transition: all 0.2s ease !important;
+}
+
+.Scout-quick-hint:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.1), 0 2px 4px -1px rgba(15, 23, 42, 0.06) !important;
+}
+
+@keyframes ScoutHintFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.Scout-hint-content {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  color: hsl(var(--foreground)) !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+}
+
+.Scout-hint-icon {
+  font-size: 16px !important;
+}
+
+/* === NOTIFICATIONS === */
+.Scout-notification {
+  position: fixed !important;
+  top: 24px !important;
+  right: 24px !important;
+  z-index: 2147483647 !important;
+  background: hsl(var(--card)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  border-radius: var(--radius) !important;  padding: 16px 20px !important;
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.1), 0 1px 2px -1px rgba(15, 23, 42, 0.1) !important;
+  font-family: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  color: hsl(var(--foreground)) !important;
+  max-width: 320px !important;
+  opacity: 0 !important;
+  transform: translateX(100%) !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.Scout-notification-show {
+  opacity: 1 !important;
+  transform: translateX(0) !important;
+}
+
+.Scout-notification-success {
+  border-left: 4px solid #10b981 !important;
+}
+
+.Scout-notification-error {
+  border-left: 4px solid #ef4444 !important;
+}
+
+.Scout-notification-warning {
+  border-left: 4px solid #f59e0b !important;
+}
+
+.Scout-notification-info {
+  border-left: 4px solid #3b82f6 !important;
+}
+
+/* === MINIMIZED STATE === */
+.Scout-overlay-minimized .Scout-overlay-content {
+  transform: scale(0.1) !important;
+  opacity: 0.8 !important;
+  pointer-events: none !important;
+}
+
+.Scout-overlay-minimized .Scout-overlay-backdrop {
+  background: rgba(0, 0, 0, 0.2) !important;
+}
+
+/* === SCROLLBAR === */
+.Scout-analysis-container::-webkit-scrollbar {
+  width: 6px !important;
+}
+
+.Scout-analysis-container::-webkit-scrollbar-track {
+  background: #f1f5f9 !important;
+  border-radius: var(--radius) !important;
+}
+
+.Scout-analysis-container::-webkit-scrollbar-thumb {
+  background: #cbd5e1 !important;
+  border-radius: var(--radius) !important;
+}
+
+.Scout-analysis-container::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8 !important;
+}
+
+/* === RESPONSIVE DESIGN === */
+@media (max-width: 480px) {
+  .Scout-overlay-content {
+    width: calc(100vw - 32px) !important;
+    max-width: none !important;
+    left: 16px !important;
+    right: 16px !important;
+  }
+  
+  .Scout-header {
+    padding: 16px 20px 12px 20px !important;
+  }
+  
+  .Scout-logo {
+    font-size: 16px !important;
+  }
+  
+  .Scout-analysis-container {
+    padding: 20px !important;
+  }
+  
+  .Scout-sentiment-analysis {
+    padding: 16px !important;
+  }
+  
+  .Scout-token-card {
+    padding: 16px !important;
+  }
+  
+  .Scout-token-actions {
+    flex-direction: column !important;
+  }
+  
+  .Scout-lens-header {
+    padding: 12px 16px !important;
+  }
+  
+  .Scout-lens-title {
+    font-size: 16px !important;
+  }
+  
+  .Scout-lens-controls {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+}
+
+@media (max-height: 600px) {
+  .Scout-overlay-content {
+    max-height: calc(100vh - 80px) !important;
+  }
+  
+  .Scout-analysis-container {
+    max-height: calc(100vh - 200px) !important;
+  }
+}
+
+/* === ACCESSIBILITY === */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* === DARK MODE SUPPORT === */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
+  }
+}
+
+/* === OCR IMAGE CLASSES === */
+.Scout-image-scanning {
+  border: 2px solid hsl(var(--primary)) !important;
+  border-radius: var(--radius) !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+.Scout-image-crypto {
+  border: 3px solid hsl(var(--primary)) !important;
+  border-radius: var(--radius) !important;
+  box-shadow: 0 0 10px rgba(15, 23, 42, 0.3) !important;
+}
+
+/* === OCR RESULTS OVERLAY === */
+.Scout-ocr-results {
+  position: fixed !important;
+  width: 350px !important;
+  max-height: 500px !important;  background: hsl(var(--card)) !important;
+  border-radius: var(--radius) !important;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  font-family: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  z-index: 10001 !important;
+  animation: ScoutOCRSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  overflow: hidden !important;
+}
+
+@keyframes ScoutOCRSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.Scout-ocr-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 16px 20px !important;  background: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-foreground)) !important;
+}
+
+.Scout-ocr-header h3 {
+  margin: 0 !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+}
+
+.Scout-close-btn {
+  background: hsl(var(--secondary)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  border-radius: var(--radius) !important;
+  width: 28px !important;
+  height: 28px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: hsl(var(--foreground)) !important;
+  font-size: 18px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: background 0.2s ease !important;
+}
+
+.Scout-close-btn:hover {
+  background: hsl(var(--accent)) !important;
+}
+
+.Scout-ocr-content {
+  padding: 20px !important;
+  max-height: 380px !important;
+  overflow-y: auto !important;
+}
+
+.Scout-ocr-section {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.Scout-ocr-section h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: hsl(var(--foreground));
+}
+
+.Scout-ocr-text-display {
+  background: hsl(var(--muted));
+  border: 1px solid hsl(var(--border));
+  padding: 1rem;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.Scout-ocr-text-display pre {
+  font-family: 'JetBrains Mono', 'Consolas', monospace;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: hsl(var(--foreground));
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  margin: 0;
+}
+
+/* OCR Analysis specific styling */
+.Scout-overlay .Scout-logo-text {
+  color: #0066cc;
+}
+
+.Scout-ocr-confidence {
+  display: inline-block;
+  background: hsl(var(--accent));
+  color: hsl(var(--accent-foreground));
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  margin-left: 0.5rem;
+  border: 1px solid hsl(var(--border));
+}
+
+/* Responsive OCR display */
+@media (max-width: 768px) {
+  .Scout-ocr-text-display {
+    max-height: 120px;
+    padding: 0.75rem;
+  }
+  
+  .Scout-ocr-text-display pre {
+    font-size: 0.8rem;
+  }
+}
+
+/* Backend Analysis Results Styling */
+.Scout-backend-analysis {
+  font-family: 'Geist', sans-serif !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.Scout-backend-header {
+  border-bottom: 1px solid hsl(var(--border)) !important;
+  padding-bottom: 1rem !important;
+  margin-bottom: 1.5rem !important;
+}
+
+.Scout-backend-header h2 {
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+  margin: 0 0 0.75rem 0 !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+.Scout-backend-status {
+  display: flex !important;
+  gap: 0.5rem !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+}
+
+.Scout-mcp-status,
+.Scout-classification,
+.Scout-confidence {
+  font-size: 0.75rem !important;
+  padding: 0.25rem 0.5rem !important;
+  background: hsl(var(--muted)) !important;
+  color: hsl(var(--muted-foreground)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  border-radius: var(--radius) !important;
+  font-weight: 500 !important;
+  white-space: nowrap !important;
+}
+
+.Scout-backend-detected {
+  border-left: 3px solid #22c55e !important;
+  background: hsl(var(--card)) !important;
+}
+
+.Scout-backend-badge {
+  background: #22c55e !important;
+  color: white !important;
+  font-size: 0.75rem !important;
+  padding: 0.25rem 0.5rem !important;
+  font-weight: 500 !important;
+  border-radius: var(--radius) !important;
+  border: none !important;
+}
+
+.Scout-tokens-section {
+  margin-bottom: 1.5rem !important;
+}
+
+.Scout-tokens-section h3 {
+  font-size: 1.125rem !important;
+  font-weight: 600 !important;
+  margin: 0 0 1rem 0 !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+.Scout-tokens-list,
+.Scout-contracts-list,
+.Scout-wallets-list {
+  display: flex !important;
+  gap: 0.5rem !important;
+  flex-wrap: wrap !important;
+  margin-bottom: 1rem !important;
+}
+
+.Scout-token-tag,
+.Scout-contract-tag,
+.Scout-wallet-tag {
+  background: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-foreground)) !important;
+  padding: 0.25rem 0.5rem !important;
+  font-size: 0.75rem !important;
+  border: 1px solid hsl(var(--border)) !important;
+  border-radius: var(--radius) !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  font-weight: 600 !important;
+}
+
+.Scout-tokens-grid {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1rem !important;
+}
+
+.Scout-contract-address,
+.Scout-wallet-address {
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 0.75rem !important;
+  color: hsl(var(--muted-foreground)) !important;
+  margin-bottom: 0.5rem !important;
+  word-break: break-all !important;
+  background: hsl(var(--muted)) !important;
+  padding: 0.25rem 0.5rem !important;
+  border-radius: var(--radius) !important;
+  border: 1px solid hsl(var(--border)) !important;
+}
+
+.Scout-supply,
+.Scout-type,
+.Scout-deployed,
+.Scout-risk,
+.Scout-decimals,
+.Scout-wallet-balance {
+  font-size: 0.75rem !important;
+  color: hsl(var(--muted-foreground)) !important;
+  margin-bottom: 0.25rem !important;
+  padding: 0.25rem 0 !important;
+  border-bottom: 1px solid hsl(var(--border)) !important;
+}
+
+.Scout-supply:last-child,
+.Scout-type:last-child,
+.Scout-deployed:last-child,
+.Scout-risk:last-child,
+.Scout-decimals:last-child,
+.Scout-wallet-balance:last-child {
+  border-bottom: none !important;
+  margin-bottom: 0 !important;
+}
+
+.Scout-contract-card,
+.Scout-wallet-card {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.Scout-contract-header,
+.Scout-wallet-header {
+  display: flex;
+  justify-content: between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.Scout-contract-badge,
+.Scout-wallet-badge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  background: hsl(var(--secondary));
+  color: hsl(var(--secondary-foreground));
+  border: 1px solid hsl(var(--border));
+}
+
+.Scout-contract-info {
+  background: hsl(var(--muted));
+  padding: 0.5rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  white-space: pre-wrap;
+  margin-top: 0.5rem;
+  border: 1px solid hsl(var(--border));
+}
+
+.Scout-summary-section {
+  margin-top: 1.5rem !important;
+  padding-top: 1rem !important;
+  border-top: 1px solid hsl(var(--border)) !important;
+}
+
+.Scout-summary-section h3 {
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  margin: 0 0 0.75rem 0 !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+.Scout-summary-content p {
+  font-size: 0.875rem !important;
+  margin: 0.5rem 0 !important;
+  color: hsl(var(--muted-foreground)) !important;
+  line-height: 1.5 !important;
+}
+
+.Scout-summary-content strong {
+  color: hsl(var(--foreground)) !important;
+  font-weight: 600 !important;
+}
+
+.Scout-actions-section {
+  display: flex !important;
+  gap: 0.75rem !important;
+  margin-top: 1.5rem !important;
+  padding-top: 1rem !important;
+  border-top: 1px solid hsl(var(--border)) !important;
+  justify-content: flex-end !important;
+}
+
+.Scout-btn-secondary {
+  background: hsl(var(--secondary)) !important;
+  color: hsl(var(--secondary-foreground)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  padding: 0.5rem 1rem !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  border-radius: var(--radius) !important;
+}
+
+.Scout-btn-secondary:hover {
+  background: hsl(var(--accent)) !important;
+  color: hsl(var(--accent-foreground)) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Token card specific styling */
+.Scout-token-card.Scout-backend-detected {
+  background: hsl(var(--card)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  border-left: 3px solid #22c55e !important;
+  border-radius: var(--radius) !important;
+  padding: 1rem !important;
+  margin-bottom: 0 !important;
+}
+
+.Scout-token-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin-bottom: 0.75rem !important;
+}
+
+.Scout-token-header h4 {
+  font-size: 1.125rem !important;
+  font-weight: 600 !important;
+  margin: 0 !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+.Scout-token-details {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.5rem !important;
+}
+
+.Scout-token-name {
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  color: hsl(var(--muted-foreground)) !important;
+  margin-bottom: 0.5rem !important;
+}
+
+/* Responsive adjustments for backend results */
+@media (max-width: 768px) {
+  .Scout-backend-status {
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+  }
+  
+  .Scout-actions-section {
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+  }
+  
+  .Scout-tokens-list,
+  .Scout-contracts-list,
+  .Scout-wallets-list {
+    flex-direction: column !important;
+  }
+  
+  .Scout-contract-address {
+    font-size: 0.6875rem !important;
+  }
+}

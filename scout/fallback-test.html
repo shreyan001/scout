@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Scout Fallback Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-btn { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin: 10px; }
+        .test-area { background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Scout Fallback Analysis Test</h1>
+    
+    <div class="test-area">
+        <h3>Test Text:</h3>
+        <p id="testText">SOL $98.45 (+5.2%) JUP $0.85 (+12.3%) BONK $0.000018 (+8.7%) KAITO is pumping! 🚀</p>
+    </div>
+    
+    <button class="test-btn" onclick="testFallback()">🧪 Test Fallback Analysis</button>
+    <button class="test-btn" onclick="testOCRFallback()">📷 Test OCR Fallback</button>
+    
+    <script src="ocr-processor.js"></script>
+    <script>
+        function testFallback() {
+            const text = document.getElementById('testText').textContent;
+            
+            // Simulate blocked backend by calling fallback directly
+            if (window.showFallbackAnalysis) {
+                window.showFallbackAnalysis(text);
+            } else {
+                alert('Fallback function not available. Make sure content script is loaded.');
+            }
+        }
+        
+        function testOCRFallback() {
+            if (window.ScoutOCRProcessor) {
+                const processor = new window.ScoutOCRProcessor();
+                const text = document.getElementById('testText').textContent;
+                processor.showFallbackResults(text);
+            } else {
+                alert('OCR Processor not available. Make sure the script is loaded.');
+            }
+        }
+        
+        // Make fallback function globally available for testing
+        window.showFallbackAnalysis = function(text) {
+            const tokens = extractTokensFromText(text);
+            const mockResult = {
+                detectedTokens: tokens,
+                tokenData: tokens.map(token => ({
+                    symbol: token,
+                    success: false,
+                    metadata: { name: `${token} Token`, symbol: token }
+                })),
+                mcpConnected: false,
+                classification: 'fallback-test',
+                confidence: 0.7
+            };
+            
+            // Create simple display
+            const overlay = document.createElement('div');
+            overlay.style.cssText = `
+                position: fixed; top: 50px; right: 50px; width: 300px;
+                background: white; border: 2px solid #007bff; border-radius: 8px;
+                padding: 20px; z-index: 9999; box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            `;
+            overlay.innerHTML = `
+                <h3>🔄 Fallback Analysis</h3>
+                <p><strong>Tokens Found:</strong> ${tokens.join(', ')}</p>
+                <p><strong>Backend:</strong> ❌ Blocked/Unavailable</p>
+                <p><strong>Mode:</strong> Client-side fallback</p>
+                <button onclick="this.parentElement.remove()" style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">Close</button>
+            `;
+            document.body.appendChild(overlay);
+        };
+        
+        function extractTokensFromText(text) {
+            const tokens = [];
+            const patterns = [
+                /\b(SOL|BTC|ETH|JUP|BONK|WIF|USDC|USDT|KAITO|DEGEN)\b/gi,
+                /\$([A-Z]{2,8})\b/g
+            ];
+            
+            patterns.forEach(pattern => {
+                const matches = text.match(pattern);
+                if (matches) {
+                    matches.forEach(match => {
+                        const token = match.replace('$', '').toUpperCase();
+                        if (!tokens.includes(token) && token.length >= 2) {
+                            tokens.push(token);
+                        }
+                    });
+                }
+            });
+            
+            return tokens;
+        }
+    </script>
+</body>
+</html>

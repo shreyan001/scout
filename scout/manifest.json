@@ -1,0 +1,69 @@
+{
+  "manifest_version": 3,
+  "name": "Scout Social Trader",
+  "version": "1.0.0",
+  "description": "AI-powered DeFi Social Trading Assistant - Scan tweets, get DeFi signals, and trade via Scout API on Solana",  "permissions": [
+    "contextMenus",
+    "activeTab",
+    "storage",
+    "scripting",
+    "tabs",
+    "clipboardRead",
+    "notifications",
+    "offscreen"
+  ],  "host_permissions": [
+    "http://localhost:3001/*",
+    "https://api.nodit.io/*",
+    "https://quote-api.jup.ag/*",
+    "https://price.jup.ag/*", 
+    "https://tokens.jup.ag/*",
+    "https://api.jup.ag/*",
+    "https://Scoutapi.com/*",
+    "https://api.openai.com/*",
+    "https://api.anthropic.com/*",
+    "<all_urls>"
+  ],"action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js"
+  },  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_end"
+    }
+  ],"icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },  "web_accessible_resources": [
+    {      "resources": [        "overlay.html", 
+        "lens-overlay.html",        "connection.html",
+        "connection.js",
+        "connection-page-script.js",
+        "wallet-bridge.html",
+        "wallet-bridge.js",
+        "wallet-bridge-enhanced.js",
+        "page-inject.js",
+        "solana-web3.js",
+        "csp-wallet-test.html",
+        "icons/*", 
+        "lens-cursor.png",
+        "ocr-worker.js",
+        "ocr-processor.js",
+        "ocr-integration-package.js",
+        "lens-ocr.js"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connect Solana Wallet - Scout Social Trader</title>
+    <style>
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 240 10% 3.9%;
+            --card: 0 0% 100%;
+            --card-foreground: 240 10% 3.9%;
+            --primary: 240 9% 9%;
+            --primary-foreground: 0 0% 98%;
+            --secondary: 240 4.8% 95.9%;
+            --secondary-foreground: 240 5.9% 10%;
+            --muted: 240 4.8% 95.9%;
+            --muted-foreground: 240 3.8% 46.1%;
+            --destructive: 0 84.2% 60.2%;
+            --destructive-foreground: 0 0% 98%;
+            --border: 240 5.9% 90%;
+            --radius: 0;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --background: 240 10% 3.9%;
+                --foreground: 0 0% 98%;
+                --card: 240 10% 3.9%;
+                --card-foreground: 0 0% 98%;
+                --primary: 0 0% 98%;
+                --primary-foreground: 240 5.9% 10%;
+                --secondary: 240 3.7% 15.9%;
+                --secondary-foreground: 0 0% 98%;
+                --muted: 240 3.7% 15.9%;
+                --muted-foreground: 240 5% 64.9%;
+                --destructive: 0 62.8% 30.6%;
+                --destructive-foreground: 0 0% 98%;
+                --border: 240 3.7% 15.9%;
+            }
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: hsl(var(--background));
+            color: hsl(var(--foreground));
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: hsl(var(--card));
+            border-bottom: 1px solid hsl(var(--border));
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: hsl(var(--foreground));
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 14px;
+            color: hsl(var(--muted-foreground));
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: hsl(var(--secondary));
+            border: 1px solid hsl(var(--border));
+            color: hsl(var(--secondary-foreground));
+            padding: 8px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-size: 16px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        
+        .close-btn:hover {
+            background: hsl(var(--destructive));
+            color: hsl(var(--destructive-foreground));
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        #walletFrame {
+            width: 100%;
+            height: calc(100vh - 140px);
+            border: none;
+            background: hsl(var(--background));
+        }
+
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 300px;
+            text-align: center;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid hsl(var(--muted));
+            border-top: 4px solid hsl(var(--primary));
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .status-message {
+            background: hsl(var(--muted));
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius);
+            padding: 16px 20px;
+            margin: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: hsl(var(--muted-foreground));
+        }
+
+        .status-message.success {
+            background: hsl(142.1 76.2% 36.3% / 0.1);
+            color: hsl(142.1 76.2% 36.3%);
+            border-color: hsl(142.1 76.2% 36.3% / 0.3);
+        }
+
+        .status-message.error {
+            background: hsl(var(--destructive) / 0.1);
+            color: hsl(var(--destructive));
+            border-color: hsl(var(--destructive) / 0.3);
+        }
+
+        .fallback-content {
+            padding: 40px 20px;
+            text-align: center;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .fallback-content h2 {
+            font-size: 20px;
+            font-weight: 600;
+            color: hsl(var(--foreground));
+            margin-bottom: 16px;
+        }
+
+        .fallback-content p {
+            font-size: 14px;
+            color: hsl(var(--muted-foreground));
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .refresh-btn {
+            background: hsl(var(--primary));
+            color: hsl(var(--primary-foreground));
+            border: 1px solid hsl(var(--border));
+            padding: 12px 24px;
+            border-radius: var(--radius);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }        .refresh-btn:hover {
+            background: hsl(var(--primary) / 0.9);
+            transform: translateY(-1px);
+        }
+        
+        .wallet-selection {
+            padding: 20px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        .wallet-selection-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        
+        .wallet-selection-header h2 {
+            color: hsl(var(--foreground));
+            margin-bottom: 8px;
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        .wallet-selection-header p {
+            color: hsl(var(--muted-foreground));
+            font-size: 14px;
+        }
+        
+        .wallet-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .wallet-button {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 16px;
+            background: hsl(var(--card));
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+        }
+        
+        .wallet-button:hover {
+            background: hsl(var(--secondary));
+            border-color: hsl(var(--primary));
+            transform: translateY(-1px);
+        }
+        
+        .wallet-icon {
+            font-size: 24px;
+            margin-right: 16px;
+            min-width: 32px;
+            text-align: center;
+        }
+        
+        .wallet-info {
+            flex: 1;
+        }
+        
+        .wallet-name {
+            font-weight: 600;
+            color: hsl(var(--foreground));
+            margin-bottom: 4px;
+        }
+        
+        .wallet-status {
+            font-size: 12px;
+            color: hsl(var(--muted-foreground));
+        }
+        
+        .wallet-arrow {
+            font-size: 16px;
+            color: hsl(var(--muted-foreground));
+            margin-left: 12px;
+        }
+        
+        .wallet-selection-footer {
+            text-align: center;
+            padding: 16px;
+            background: hsl(var(--muted) / 0.3);
+            border-radius: var(--radius);
+        }
+        
+        .wallet-selection-footer p {
+            margin: 0;
+            font-size: 12px;
+            color: hsl(var(--muted-foreground));
+        }
+        
+        .wallet-install-suggestions {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .wallet-install-suggestions h3 {
+            color: hsl(var(--foreground));
+            margin-bottom: 16px;
+            font-size: 16px;
+        }
+        
+        .wallet-suggestions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        
+        .wallet-suggestion {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 12px;
+            background: hsl(var(--card));
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius);
+            text-decoration: none;
+            color: hsl(var(--foreground));
+            transition: all 0.2s ease;
+            min-width: 80px;
+        }
+        
+        .wallet-suggestion:hover {
+            background: hsl(var(--secondary));
+            transform: translateY(-2px);
+        }
+        
+        .wallet-suggestion .wallet-icon {
+            font-size: 20px;
+            margin: 0 0 8px 0;
+        }
+        
+        .wallet-suggestion .wallet-name {
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .loading-detail {
+            font-size: 12px;
+            color: hsl(var(--muted-foreground));
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <button class="close-btn" onclick="closeConnectionPage()" title="Close">✖</button>
+        <h1>🚀 Connect Solana Wallet</h1>
+        <p>Connect your wallet to access Scout Social Trader features</p>
+    </div>    <div class="main-content">
+        <div id="loadingContainer" class="loading-container">
+            <div class="loading-spinner"></div>
+            <p>🔍 Detecting wallets using page injection...</p>
+            <p class="loading-detail">Injecting script to access wallet providers directly</p>
+        </div>
+
+        <div id="fallbackContent" class="fallback-content" style="display: none;">
+            <h2>⚠️ Unable to Detect Wallets</h2>
+            <p>The page injection method couldn't find any Solana wallets.</p>
+            <button class="refresh-btn" onclick="retryConnection()">🔄 Try Again</button>
+        </div>
+    </div>
+
+    <!-- Load external page script connection manager -->
+    <script src="connection-page-script.js"></script>
+</body>
+</html>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Scout Backend Integration Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-area { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        .crypto-text { background: #f0f8ff; padding: 10px; margin: 10px 0; }
+        button { padding: 10px 20px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>🚀 Scout Backend Integration Test</h1>
+    
+    <div class="test-area">
+        <h2>Backend API Health Check</h2>
+        <button onclick="testBackendHealth()">Test Backend Health</button>
+        <div id="health-result"></div>
+    </div>
+    
+    <div class="test-area">
+        <h2>Token Analysis Test</h2>
+        <div class="crypto-text">
+            Select this text: "hey that's my KAITO token worth $45.67"
+        </div>
+        <div class="crypto-text">
+            Or this: "Compare ETH and BTC prices today"
+        </div>
+        <div class="crypto-text">
+            Contract test: "Analyze contract 0xA0b73E1Ff0B80914AB6fe0444E65848C4C34450b"
+        </div>
+        <button onclick="testTokenAnalysis()">Test Token Analysis</button>
+        <div id="analysis-result"></div>
+    </div>
+    
+    <div class="test-area">
+        <h2>Instructions</h2>
+        <ol>
+            <li>Make sure your Scout backend server is running on http://localhost:3001</li>
+            <li>Load this extension in Chrome</li>
+            <li>Right-click on the crypto text above and select "🚀 Analyze with Scout AI"</li>
+            <li>Or select text and use Ctrl+Shift+L to activate lens mode</li>
+            <li>Check console for detailed logs</li>
+        </ol>
+    </div>
+
+    <script>
+        async function testBackendHealth() {
+            const resultDiv = document.getElementById('health-result');
+            resultDiv.innerHTML = 'Testing...';
+            
+            try {
+                const response = await fetch('http://localhost:3001/health');
+                const data = await response.json();
+                resultDiv.innerHTML = `<strong>✅ Success:</strong> ${JSON.stringify(data, null, 2)}`;
+                resultDiv.style.color = 'green';
+            } catch (error) {
+                resultDiv.innerHTML = `<strong>❌ Error:</strong> ${error.message}`;
+                resultDiv.style.color = 'red';
+            }
+        }
+        
+        async function testTokenAnalysis() {
+            const resultDiv = document.getElementById('analysis-result');
+            resultDiv.innerHTML = 'Testing...';
+            
+            try {
+                const response = await fetch('http://localhost:3001/api/process', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: "hey that's my KAITO token"
+                    })
+                });
+                
+                const data = await response.json();
+                resultDiv.innerHTML = `<strong>✅ Success:</strong> <pre>${JSON.stringify(data, null, 2)}</pre>`;
+                resultDiv.style.color = 'green';
+            } catch (error) {
+                resultDiv.innerHTML = `<strong>❌ Error:</strong> ${error.message}`;
+                resultDiv.style.color = 'red';
+            }
+        }
+        
+        // Log when extension content script is available
+        console.log('🧪 Scout backend integration test page loaded');
+        console.log('📋 Instructions:');
+        console.log('1. Make sure backend server is running on http://localhost:3001');
+        console.log('2. Right-click on crypto text and select Scout AI analysis');
+        console.log('3. Check browser console for detailed logs');
+    </script>
+</body>
+</html>

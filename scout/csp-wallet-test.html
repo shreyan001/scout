@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSP & Wallet Integration Test - Scout Extension</title>
+    <style>
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 240 10% 3.9%;
+            --card: 0 0% 100%;
+            --card-foreground: 240 10% 3.9%;
+            --primary: 240 9% 9%;
+            --primary-foreground: 0 0% 98%;
+            --secondary: 240 4.8% 95.9%;
+            --secondary-foreground: 240 5.9% 10%;
+            --muted: 240 4.8% 95.9%;
+            --muted-foreground: 240 3.8% 46.1%;
+            --accent: 240 4.8% 95.9%;
+            --accent-foreground: 240 5.9% 10%;
+            --destructive: 0 84.2% 60.2%;
+            --destructive-foreground: 0 0% 98%;
+            --border: 240 5.9% 90%;
+            --radius: 0;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --background: 240 10% 3.9%;
+                --foreground: 0 0% 98%;
+                --card: 240 10% 3.9%;
+                --card-foreground: 0 0% 98%;
+                --primary: 0 0% 98%;
+                --primary-foreground: 240 5.9% 10%;
+                --secondary: 240 3.7% 15.9%;
+                --secondary-foreground: 0 0% 98%;
+                --muted: 240 3.7% 15.9%;
+                --muted-foreground: 240 5% 64.9%;
+                --accent: 240 3.7% 15.9%;
+                --accent-foreground: 0 0% 98%;
+                --destructive: 0 62.8% 30.6%;
+                --destructive-foreground: 0 0% 98%;
+                --border: 240 3.7% 15.9%;
+            }
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: hsl(var(--background));
+            color: hsl(var(--foreground));
+            margin: 0;
+            padding: 20px;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: hsl(var(--card));
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius);
+            padding: 32px;
+            box-shadow: 0 1px 3px 0 hsla(var(--foreground), 0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .title {
+            font-size: 32px;
+            font-weight: 700;
+            color: hsl(var(--foreground));
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: hsl(var(--muted-foreground));
+            margin-bottom: 24px;
+        }
+
+        .test-section {
+            background: hsl(var(--secondary));
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .test-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: hsl(var(--foreground));
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .test-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid hsl(var(--border));
+        }
+
+        .test-item:last-child {
+            border-bottom: none;
+        }
+
+        .test-label {
+            font-weight: 500;
+            color: hsl(var(--foreground));
+        }
+
+        .test-status {
+            padding: 4px 12px;
+            border-radius: var(--radius);
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-pass {
+            background: hsl(142.1 76.2% 36.3% / 0.1);
+            color: hsl(142.1 76.2% 36.3%);
+            border: 1px solid hsl(142.1 76.2% 36.3% / 0.3);
+        }
+
+        .status-fail {
+            background: hsl(var(--destructive) / 0.1);
+            color: hsl(var(--destructive));
+            border: 1px solid hsl(var(--destructive) / 0.3);
+        }
+
+        .status-loading {
+            background: hsl(var(--muted));
+            color: hsl(var(--muted-foreground));
+            border: 1px solid hsl(var(--border));
+        }
+
+        .test-btn {
+            background: hsl(var(--primary));
+            color: hsl(var(--primary-foreground));
+            border: none;
+            padding: 12px 24px;
+            border-radius: var(--radius);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-right: 8px;
+        }
+
+        .test-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .test-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .details {
+            font-size: 12px;
+            color: hsl(var(--muted-foreground));
+            margin-top: 8px;
+            padding: 8px;
+            background: hsl(var(--muted));
+            border-radius: var(--radius);
+            display: none;
+        }
+
+        .details.show {
+            display: block;
+        }
+
+        .actions {
+            text-align: center;
+            margin-top: 32px;
+        }
+
+        .action-btn {
+            background: hsl(var(--accent));
+            color: hsl(var(--accent-foreground));
+            border: 1px solid hsl(var(--border));
+            padding: 16px 32px;
+            border-radius: var(--radius);
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin: 0 8px;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .action-btn:hover {
+            background: hsl(var(--primary));
+            color: hsl(var(--primary-foreground));
+        }
+
+        .console-output {
+            background: #1a1a1a;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            padding: 16px;
+            border-radius: var(--radius);
+            font-size: 12px;
+            line-height: 1.4;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            margin-top: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">🔧 CSP & Wallet Integration Test</h1>
+            <p class="subtitle">
+                Comprehensive testing suite for Content Security Policy compliance and wallet connection functionality
+            </p>
+        </div>
+
+        <!-- CSP Compliance Tests -->
+        <div class="test-section">
+            <h2 class="test-title">🛡️ CSP Compliance Tests</h2>
+            
+            <div class="test-item">
+                <span class="test-label">External CDN Scripts</span>
+                <span class="test-status status-loading" id="csp-external-scripts">Testing...</span>
+            </div>
+            
+            <div class="test-item">
+                <span class="test-label">Google Fonts Loading</span>
+                <span class="test-status status-loading" id="csp-fonts">Testing...</span>
+            </div>
+            
+            <div class="test-item">
+                <span class="test-label">Inline Event Handlers</span>
+                <span class="test-status status-loading" id="csp-inline-handlers">Testing...</span>
+            </div>
+            
+            <div class="test-item">
+                <span class="test-label">Local Solana Web3.js Loading</span>
+                <span class="test-status status-loading" id="csp-local-web3">Testing...</span>
+            </div>
+            
+            <div class="details" id="csp-details">
+                CSP test results will appear here...
+            </div>
+        </div>
+
+        <!-- Wallet Connection Tests -->
+        <div class="test-section">
+            <h2 class="test-title">🔗 Wallet Connection Tests</h2>
+            
+            <div class="test-item">
+                <span class="test-label">Wallet Bridge Frame Loading</span>
+                <span class="test-status status-loading" id="wallet-bridge-loading">Testing...</span>
+            </div>
+            
+            <div class="test-item">
+                <span class="test-label">Wallet Detection</span>
+                <span class="test-status status-loading" id="wallet-detection">Testing...</span>
+            </div>
+            
+            <div class="test-item">
+                <span class="test-label">Storage Communication</span>
+                <span class="test-status status-loading" id="wallet-storage">Testing...</span>
+            </div>
+            
+            <div class="test-item">
+                <span class="test-label">Balance Fetching</span>
+                <span class="test-status status-loading" id="wallet-balance">Testing...</span>
+            </div>
+            
+            <div class="details" id="wallet-details">
+                Wallet test results will appear here...
+            </div>
+        </div>
+
+        <!-- Extension Integration Tests -->
+        <div class="test-section">
+            <h2 class="test-title">🧩 Extension Integration Tests</h2>
+            
+            <div class="test-item">
+                <span class="test-label">Content Script Injection</span>
+                <span class="test-status status-loading" id="content-script">Testing...</span>
+            </div>
+            
+            <div class="test-item">
+                <span class="test-label">Background Script Communication</span>
+                <span class="test-status status-loading" id="background-script">Testing...</span>
+            </div>
+            
+            <div class="test-item">
+                <span class="test-label">OCR Functionality</span>
+                <span class="test-status status-loading" id="ocr-test">Testing...</span>
+            </div>
+            
+            <div class="test-item">
+                <span class="test-label">Popup Wallet Display</span>
+                <span class="test-status status-loading" id="popup-wallet">Testing...</span>
+            </div>
+            
+            <div class="details" id="integration-details">
+                Integration test results will appear here...
+            </div>
+        </div>
+
+        <!-- Console Output -->
+        <div class="test-section">
+            <h2 class="test-title">📝 Console Output</h2>
+            <div class="console-output" id="console-output">
+Starting CSP and wallet integration tests...\n
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="actions">
+            <button class="test-btn" onclick="runAllTests()">🔄 Run All Tests</button>
+            <button class="test-btn" onclick="testWalletConnection()">🔗 Test Wallet Connection</button>
+            <a href="connection.html" class="action-btn" target="_blank">🚀 Open Wallet Connection</a>
+            <a href="popup.html" class="action-btn" target="_blank">📱 Open Extension Popup</a>
+        </div>
+    </div>
+
+    <script>
+        // Console output management
+        function logToConsole(message, type = 'info') {
+            const console_output = document.getElementById('console-output');
+            const timestamp = new Date().toLocaleTimeString();
+            const typeIcon = type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️';
+            console_output.textContent += `[${timestamp}] ${typeIcon} ${message}\n`;
+            console_output.scrollTop = console_output.scrollHeight;
+        }
+
+        // Test status management
+        function setTestStatus(testId, status, details = '') {
+            const element = document.getElementById(testId);
+            element.className = `test-status status-${status}`;
+            element.textContent = status === 'pass' ? '✅ PASS' : status === 'fail' ? '❌ FAIL' : '⏳ LOADING';
+            
+            if (details) {
+                const detailsId = testId.split('-')[0] + '-details';
+                const detailsElement = document.getElementById(detailsId);
+                if (detailsElement) {
+                    detailsElement.textContent += `${testId}: ${details}\n`;
+                    detailsElement.classList.add('show');
+                }
+            }
+        }
+
+        // CSP Tests
+        async function testCSPCompliance() {
+            logToConsole('Starting CSP compliance tests...');
+
+            // Test external scripts
+            try {
+                const script = document.createElement('script');
+                script.src = 'https://example.com/test.js';
+                script.onerror = () => {
+                    setTestStatus('csp-external-scripts', 'pass', 'External scripts blocked as expected');
+                    logToConsole('CSP: External scripts properly blocked', 'success');
+                };
+                script.onload = () => {
+                    setTestStatus('csp-external-scripts', 'fail', 'External scripts not blocked - CSP issue');
+                    logToConsole('CSP: External scripts not blocked - potential CSP issue', 'error');
+                };
+                document.head.appendChild(script);
+                setTimeout(() => document.head.removeChild(script), 1000);
+            } catch (e) {
+                setTestStatus('csp-external-scripts', 'pass', 'External scripts blocked by CSP');
+                logToConsole('CSP: External scripts blocked by CSP', 'success');
+            }
+
+            // Test Google Fonts
+            try {
+                const link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = 'https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap';
+                link.onerror = () => {
+                    setTestStatus('csp-fonts', 'pass', 'Google Fonts blocked as expected');
+                    logToConsole('CSP: Google Fonts properly blocked', 'success');
+                };
+                link.onload = () => {
+                    setTestStatus('csp-fonts', 'fail', 'Google Fonts not blocked - CSP issue');
+                    logToConsole('CSP: Google Fonts not blocked - potential CSP issue', 'error');
+                };
+                document.head.appendChild(link);
+                setTimeout(() => document.head.removeChild(link), 1000);
+            } catch (e) {
+                setTestStatus('csp-fonts', 'pass', 'Google Fonts blocked by CSP');
+                logToConsole('CSP: Google Fonts blocked by CSP', 'success');
+            }
+
+            // Test inline handlers
+            const hasInlineHandlers = document.querySelector('[onclick], [onerror], [onload]');
+            if (!hasInlineHandlers) {
+                setTestStatus('csp-inline-handlers', 'pass', 'No inline event handlers detected');
+                logToConsole('CSP: No inline event handlers detected', 'success');
+            } else {
+                setTestStatus('csp-inline-handlers', 'fail', 'Inline event handlers found');
+                logToConsole('CSP: Inline event handlers found - CSP violation', 'error');
+            }
+
+            // Test local Web3.js loading
+            try {
+                if (chrome && chrome.runtime) {
+                    const web3Url = chrome.runtime.getURL('solana-web3.js');
+                    const response = await fetch(web3Url);
+                    if (response.ok) {
+                        setTestStatus('csp-local-web3', 'pass', 'Local Solana Web3.js accessible');
+                        logToConsole('CSP: Local Solana Web3.js is accessible', 'success');
+                    } else {
+                        setTestStatus('csp-local-web3', 'fail', 'Local Solana Web3.js not accessible');
+                        logToConsole('CSP: Local Solana Web3.js not accessible', 'error');
+                    }
+                } else {
+                    setTestStatus('csp-local-web3', 'fail', 'Chrome extension APIs not available');
+                    logToConsole('CSP: Chrome extension APIs not available', 'error');
+                }
+            } catch (e) {
+                setTestStatus('csp-local-web3', 'fail', `Error accessing local Web3.js: ${e.message}`);
+                logToConsole(`CSP: Error accessing local Web3.js: ${e.message}`, 'error');
+            }
+        }
+
+        // Wallet Connection Tests
+        async function testWalletConnection() {
+            logToConsole('Starting wallet connection tests...');
+
+            // Test wallet bridge loading
+            try {
+                const iframe = document.createElement('iframe');
+                iframe.src = chrome.runtime.getURL('wallet-bridge.html');
+                iframe.style.display = 'none';
+                iframe.onload = () => {
+                    setTestStatus('wallet-bridge-loading', 'pass', 'Wallet bridge loaded successfully');
+                    logToConsole('Wallet: Bridge frame loaded successfully', 'success');
+                    document.body.removeChild(iframe);
+                };
+                iframe.onerror = () => {
+                    setTestStatus('wallet-bridge-loading', 'fail', 'Wallet bridge failed to load');
+                    logToConsole('Wallet: Bridge frame failed to load', 'error');
+                };
+                document.body.appendChild(iframe);
+            } catch (e) {
+                setTestStatus('wallet-bridge-loading', 'fail', `Error loading wallet bridge: ${e.message}`);
+                logToConsole(`Wallet: Error loading bridge: ${e.message}`, 'error');
+            }
+
+            // Test wallet detection
+            try {
+                if (window.phantom?.solana || window.solflare || window.glow) {
+                    setTestStatus('wallet-detection', 'pass', 'Solana wallets detected');
+                    logToConsole('Wallet: Solana wallets detected in window', 'success');
+                } else {
+                    setTestStatus('wallet-detection', 'fail', 'No Solana wallets detected');
+                    logToConsole('Wallet: No Solana wallets detected', 'error');
+                }
+            } catch (e) {
+                setTestStatus('wallet-detection', 'fail', `Error detecting wallets: ${e.message}`);
+                logToConsole(`Wallet: Error detecting wallets: ${e.message}`, 'error');
+            }
+
+            // Test storage communication
+            try {
+                if (chrome && chrome.storage) {
+                    await chrome.storage.local.set({test: 'csp-test'});
+                    const result = await chrome.storage.local.get('test');
+                    if (result.test === 'csp-test') {
+                        setTestStatus('wallet-storage', 'pass', 'Storage communication working');
+                        logToConsole('Wallet: Storage communication working', 'success');
+                        await chrome.storage.local.remove('test');
+                    } else {
+                        setTestStatus('wallet-storage', 'fail', 'Storage communication failed');
+                        logToConsole('Wallet: Storage communication failed', 'error');
+                    }
+                } else {
+                    setTestStatus('wallet-storage', 'fail', 'Chrome storage APIs not available');
+                    logToConsole('Wallet: Chrome storage APIs not available', 'error');
+                }
+            } catch (e) {
+                setTestStatus('wallet-storage', 'fail', `Storage error: ${e.message}`);
+                logToConsole(`Wallet: Storage error: ${e.message}`, 'error');
+            }
+
+            // Test balance fetching capability
+            try {
+                const web3Available = typeof window.solanaWeb3 !== 'undefined';
+                if (web3Available) {
+                    setTestStatus('wallet-balance', 'pass', 'Solana Web3.js available for balance fetching');
+                    logToConsole('Wallet: Solana Web3.js available for balance fetching', 'success');
+                } else {
+                    setTestStatus('wallet-balance', 'fail', 'Solana Web3.js not available');
+                    logToConsole('Wallet: Solana Web3.js not available for balance fetching', 'error');
+                }
+            } catch (e) {
+                setTestStatus('wallet-balance', 'fail', `Balance test error: ${e.message}`);
+                logToConsole(`Wallet: Balance test error: ${e.message}`, 'error');
+            }
+        }
+
+        // Integration Tests
+        async function testIntegration() {
+            logToConsole('Starting integration tests...');
+
+            // Test content script
+            try {
+                const contentScriptTest = document.querySelector('.Scout-ocr-overlay');
+                if (contentScriptTest || typeof window.ScoutContentScript !== 'undefined') {
+                    setTestStatus('content-script', 'pass', 'Content script injected');
+                    logToConsole('Integration: Content script injected', 'success');
+                } else {
+                    setTestStatus('content-script', 'fail', 'Content script not detected');
+                    logToConsole('Integration: Content script not detected', 'error');
+                }
+            } catch (e) {
+                setTestStatus('content-script', 'fail', `Content script error: ${e.message}`);
+                logToConsole(`Integration: Content script error: ${e.message}`, 'error');
+            }
+
+            // Test background script communication
+            try {
+                if (chrome && chrome.runtime) {
+                    chrome.runtime.sendMessage({type: 'CSP_TEST'}, (response) => {
+                        if (chrome.runtime.lastError) {
+                            setTestStatus('background-script', 'fail', 'Background script communication failed');
+                            logToConsole('Integration: Background script communication failed', 'error');
+                        } else {
+                            setTestStatus('background-script', 'pass', 'Background script communication working');
+                            logToConsole('Integration: Background script communication working', 'success');
+                        }
+                    });
+                } else {
+                    setTestStatus('background-script', 'fail', 'Chrome runtime APIs not available');
+                    logToConsole('Integration: Chrome runtime APIs not available', 'error');
+                }
+            } catch (e) {
+                setTestStatus('background-script', 'fail', `Background script error: ${e.message}`);
+                logToConsole(`Integration: Background script error: ${e.message}`, 'error');
+            }
+
+            // Test OCR functionality
+            try {
+                if (typeof window.createLensOCR === 'function') {
+                    setTestStatus('ocr-test', 'pass', 'OCR functionality available');
+                    logToConsole('Integration: OCR functionality available', 'success');
+                } else {
+                    setTestStatus('ocr-test', 'fail', 'OCR functionality not available');
+                    logToConsole('Integration: OCR functionality not available', 'error');
+                }
+            } catch (e) {
+                setTestStatus('ocr-test', 'fail', `OCR test error: ${e.message}`);
+                logToConsole(`Integration: OCR test error: ${e.message}`, 'error');
+            }
+
+            // Test popup wallet display
+            try {
+                if (chrome && chrome.storage) {
+                    const walletData = await chrome.storage.local.get(['walletConnected', 'walletAddress']);
+                    if (walletData.walletConnected && walletData.walletAddress) {
+                        setTestStatus('popup-wallet', 'pass', 'Wallet data in storage for popup');
+                        logToConsole('Integration: Wallet data available for popup display', 'success');
+                    } else {
+                        setTestStatus('popup-wallet', 'fail', 'No wallet data in storage');
+                        logToConsole('Integration: No wallet data in storage for popup', 'error');
+                    }
+                } else {
+                    setTestStatus('popup-wallet', 'fail', 'Chrome storage not available');
+                    logToConsole('Integration: Chrome storage not available', 'error');
+                }
+            } catch (e) {
+                setTestStatus('popup-wallet', 'fail', `Popup test error: ${e.message}`);
+                logToConsole(`Integration: Popup test error: ${e.message}`, 'error');
+            }
+        }
+
+        // Run all tests
+        async function runAllTests() {
+            logToConsole('🚀 Starting comprehensive CSP and wallet integration tests...');
+            
+            // Reset all statuses
+            const statusElements = document.querySelectorAll('.test-status');
+            statusElements.forEach(el => {
+                el.className = 'test-status status-loading';
+                el.textContent = '⏳ LOADING';
+            });
+
+            await testCSPCompliance();
+            await testWalletConnection();
+            await testIntegration();
+
+            logToConsole('✅ All tests completed! Check results above.');
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            logToConsole('🔧 CSP & Wallet Integration Test Suite initialized');
+            logToConsole('Click "Run All Tests" to start comprehensive testing');
+            
+            // Auto-run basic tests
+            setTimeout(runAllTests, 1000);
+        });
+    </script>
+</body>
+</html>

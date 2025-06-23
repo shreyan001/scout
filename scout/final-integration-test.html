@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scout Extension - Final Integration Test</title>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 240 10% 3.9%;
+            --card: 0 0% 100%;
+            --card-foreground: 240 10% 3.9%;
+            --primary: 240 9% 9%;
+            --primary-foreground: 0 0% 98%;
+            --secondary: 240 4.8% 95.9%;
+            --secondary-foreground: 240 5.9% 10%;
+            --muted: 240 4.8% 95.9%;
+            --muted-foreground: 240 3.8% 46.1%;
+            --accent: 240 4.8% 95.9%;
+            --accent-foreground: 240 5.9% 10%;
+            --destructive: 0 84.2% 60.2%;
+            --destructive-foreground: 0 0% 98%;
+            --border: 240 5.9% 90%;
+            --radius: 0;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --background: 240 10% 3.9%;
+                --foreground: 0 0% 98%;
+                --card: 240 10% 3.9%;
+                --card-foreground: 0 0% 98%;
+                --primary: 0 0% 98%;
+                --primary-foreground: 240 5.9% 10%;
+                --secondary: 240 3.7% 15.9%;
+                --secondary-foreground: 0 0% 98%;
+                --muted: 240 3.7% 15.9%;
+                --muted-foreground: 240 5% 64.9%;
+                --accent: 240 3.7% 15.9%;
+                --accent-foreground: 0 0% 98%;
+                --destructive: 0 62.8% 30.6%;
+                --destructive-foreground: 0 0% 98%;
+                --border: 240 3.7% 15.9%;
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Geist', system-ui, -apple-system, sans-serif;
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            flex: 1;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.8));
+            color: hsl(var(--primary-foreground));
+            border-radius: var(--radius);
+            box-shadow: 0 4px 6px -1px hsl(var(--primary) / 0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .test-card {
+            background: hsl(var(--card));
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px hsl(var(--primary) / 0.05);
+            transition: all 0.2s ease;
+        }
+
+        .test-card:hover {
+            box-shadow: 0 4px 8px hsl(var(--primary) / 0.1);
+            transform: translateY(-2px);
+        }
+
+        .test-card h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .test-card p {
+            color: hsl(var(--muted-foreground));
+            margin-bottom: 1.5rem;
+        }
+
+        .test-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: hsl(var(--primary));
+            color: hsl(var(--primary-foreground));
+        }
+
+        .btn-primary:hover {
+            background: hsl(var(--primary) / 0.9);
+        }
+
+        .btn-secondary {
+            background: hsl(var(--secondary));
+            color: hsl(var(--secondary-foreground));
+        }
+
+        .btn-secondary:hover {
+            background: hsl(var(--secondary) / 0.8);
+        }
+
+        .sample-content {
+            background: hsl(var(--muted));
+            border-radius: var(--radius);
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .sample-content h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .crypto-text {
+            background: hsl(var(--card));
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius);
+            padding: 1rem;
+            margin: 1rem 0;
+            font-family: 'Geist Mono', monospace;
+        }
+
+        .crypto-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: var(--radius);
+            margin: 1rem 0;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .status-success {
+            background: hsl(142 76% 36% / 0.1);
+            color: hsl(142 76% 36%);
+        }
+
+        .status-error {
+            background: hsl(var(--destructive) / 0.1);
+            color: hsl(var(--destructive));
+        }
+
+        .status-warning {
+            background: hsl(48 96% 53% / 0.1);
+            color: hsl(48 96% 53%);
+        }
+
+        .results {
+            background: hsl(var(--card));
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-top: 2rem;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Geist Mono', monospace;
+            font-size: 0.875rem;
+        }
+
+        .footer {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid hsl(var(--border));
+            text-align: center;
+            color: hsl(var(--muted-foreground));
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .test-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Scout Social Trader Extension</h1>
+            <p>Final Integration Test Suite - Comprehensive Feature Validation</p>
+        </div>
+
+        <div class="test-grid">
+            <!-- Wallet Connection Test -->
+            <div class="test-card">
+                <h3>🔗 Wallet Connection</h3>
+                <p>Test the enhanced wallet connection system with iframe bridge implementation.</p>
+                <div class="test-actions">
+                    <button class="btn btn-primary" onclick="openWalletConnection()">
+                        Connect Wallet
+                    </button>
+                    <button class="btn btn-secondary" onclick="checkWalletStatus()">
+                        Check Status
+                    </button>
+                </div>
+                <div id="walletStatus" class="results" style="display:none;"></div>
+            </div>
+
+            <!-- Popup Interface Test -->
+            <div class="test-card">
+                <h3>🖥️ Popup Interface</h3>
+                <p>Test the modern popup interface with wallet integration and balance display.</p>
+                <div class="test-actions">
+                    <button class="btn btn-primary" onclick="openPopup()">
+                        Open Popup
+                    </button>
+                    <button class="btn btn-secondary" onclick="testPopupFeatures()">
+                        Test Features
+                    </button>
+                </div>
+                <div id="popupStatus" class="results" style="display:none;"></div>
+            </div>
+
+            <!-- Content Script Test -->
+            <div class="test-card">
+                <h3>📱 Content Script</h3>
+                <p>Test content script injection and text analysis functionality.</p>
+                <div class="test-actions">
+                    <button class="btn btn-primary" onclick="testContentScript()">
+                        Test Analysis
+                    </button>
+                    <button class="btn btn-secondary" onclick="toggleLensMode()">
+                        Toggle Lens
+                    </button>
+                </div>
+                <div id="contentStatus" class="results" style="display:none;"></div>
+            </div>
+
+            <!-- OCR Test -->
+            <div class="test-card">
+                <h3>👁️ OCR Analysis</h3>
+                <p>Test Chrome Lens OCR integration with crypto content detection.</p>
+                <div class="test-actions">
+                    <button class="btn btn-primary" onclick="testOCR()">
+                        Test OCR
+                    </button>
+                    <button class="btn btn-secondary" onclick="scanPage()">
+                        Scan Page
+                    </button>
+                </div>
+                <div id="ocrStatus" class="results" style="display:none;"></div>
+            </div>
+
+            <!-- Scout API Test -->
+            <div class="test-card">
+                <h3>🔄 Scout API</h3>
+                <p>Test Scout API integration for token data and analysis.</p>
+                <div class="test-actions">
+                    <button class="btn btn-primary" onclick="testScoutAPI()">
+                        Test API
+                    </button>
+                    <button class="btn btn-secondary" onclick="getTokenPrices()">
+                        Get Prices
+                    </button>
+                </div>
+                <div id="apiStatus" class="results" style="display:none;"></div>
+            </div>
+
+            <!-- UI/UX Test -->
+            <div class="test-card">
+                <h3>🎨 UI/UX Design</h3>
+                <p>Test the unified modern design system across all components.</p>
+                <div class="test-actions">
+                    <button class="btn btn-primary" onclick="testDesignSystem()">
+                        Test Design
+                    </button>
+                    <button class="btn btn-secondary" onclick="toggleDarkMode()">
+                        Toggle Dark Mode
+                    </button>
+                </div>
+                <div id="designStatus" class="results" style="display:none;"></div>
+            </div>
+        </div>
+
+        <!-- Sample Content for Testing -->
+        <div class="sample-content">
+            <h2>📝 Sample Content for Testing</h2>
+            <p>Use the content below to test Scout's analysis capabilities:</p>
+            
+            <div class="crypto-text">
+                <strong>Crypto Tweet Sample:</strong><br>
+                "Just bought more $SOL at $98.45! 🚀 Scout aggregator is showing great volume. 
+                $JUP token looking bullish. Time to DCA into this dip. #Solana #DeFi #ToTheMoon"
+            </div>
+
+            <div class="crypto-text">
+                <strong>DeFi Signal Sample:</strong><br>
+                "🔥 HOT SIGNAL: $BONK up 25% today! Phantom wallet integration live. 
+                Scout v6 API showing massive swap volume. Solflare users loading up. 
+                This could be the next 100x gem! 💎🙌"
+            </div>
+
+            <div class="crypto-text">
+                <strong>Technical Analysis Sample:</strong><br>
+                "SOL/USDC pair breaking resistance at $100. Strong volume on Scout DEX. 
+                Glow wallet staking rewards at 7.2% APY. Time to accumulate before the next bull run! 
+                Target: $150 EOY 📈"
+            </div>
+
+            <!-- Sample crypto chart image -->
+            <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZ3JhZGllbnQiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMCUiIHkyPSIxMDAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3R5bGU9InN0b3AtY29sb3I6IzAwZDRmZjtzdG9wLW9wYWNpdHk6MC4zIiAvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiMwMGQ0ZmY7c3RvcC1vcGFjaXR5OjAiIC8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMGYxNjI5IiAvPgogIDx0ZXh0IHg9IjIwIiB5PSIzMCIgZmlsbD0iI2ZmZiIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE2Ij5TT0wvVVNEQzwvdGV4dD4KICA8dGV4dCB4PSIyMCIgeT0iNTAiIGZpbGw9IiMwMGQ0ZmYiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCI+JDk4LjQ1PC90ZXh0PgogIDx0ZXh0IHg9IjIwIiB5PSI3MCIgZmlsbD0iIzAwZmY4OCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE0Ij4rNS4yJSAoMjRoKTwvdGV4dD4KICA8cGF0aCBkPSJNIDUwIDE1MCBMIDEwMCAxMzAgTCAxNTAgMTIwIEwgMjAwIDEwMCBMIDI1MCA4MCBMIDMwMCA3MCBMIDM1MCA2MCBMIDM4MCA1MCIgc3Ryb2tlPSIjMDBkNGZmIiBzdHJva2Utd2lkdGg9IjIiIGZpbGw9Im5vbmUiLz4KICA8cGF0aCBkPSJNIDUwIDE1MCBMIDM4MCA1MCBMIDM4MCAyMDAiIGZpbGw9InVybCgjZ3JhZGllbnQpIiBzdHJva2U9Im5vbmUiLz4KICA8dGV4dCB4PSIyMDAiIHk9IjE5MCIgZmlsbD0iI2ZmZiIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5KdXBpdGVyIEFnZ3JlZ2F0b3I8L3RleHQ+Cjwvc3ZnPg==" 
+                 alt="SOL Price Chart" 
+                 class="crypto-image"
+                 onclick="testImageOCR(this)">
+        </div>
+
+        <div class="footer">
+            <p>Scout Social Trader Extension v2.0 - Enhanced with shadcn/ui + Vercel design system</p>
+            <p>Modern wallet integration, Chrome Lens OCR, and Scout API v6</p>
+        </div>
+    </div>
+
+    <script>
+        console.log('🚀 Scout Extension Final Integration Test Page Loaded');
+
+        // Test Functions
+        function openWalletConnection() {
+            showStatus('walletStatus', 'Opening wallet connection interface...', 'info');
+            try {
+                // Open connection page
+                const connectionUrl = chrome.runtime.getURL('connection.html');
+                window.open(connectionUrl, '_blank', 'width=500,height=600');
+                showStatus('walletStatus', '✅ Wallet connection page opened', 'success');
+            } catch (error) {
+                showStatus('walletStatus', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function checkWalletStatus() {
+            showStatus('walletStatus', 'Checking wallet status...', 'info');
+            try {
+                const result = await chrome.storage.local.get([
+                    'isWalletConnected', 'walletName', 'walletAddress', 'walletBalance'
+                ]);
+                
+                if (result.isWalletConnected) {
+                    showStatus('walletStatus', 
+                        `✅ Wallet Connected: ${result.walletName}\n` +
+                        `Address: ${result.walletAddress}\n` +
+                        `Balance: ${result.walletBalance} SOL`, 'success');
+                } else {
+                    showStatus('walletStatus', '⚠️ No wallet connected', 'warning');
+                }
+            } catch (error) {
+                showStatus('walletStatus', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        function openPopup() {
+            showStatus('popupStatus', 'Opening extension popup...', 'info');
+            try {
+                chrome.runtime.sendMessage({action: 'openPopup'}, (response) => {
+                    if (response?.success) {
+                        showStatus('popupStatus', '✅ Popup opened successfully', 'success');
+                    } else {
+                        showStatus('popupStatus', '⚠️ Popup may not be accessible from this page', 'warning');
+                    }
+                });
+            } catch (error) {
+                showStatus('popupStatus', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        function testPopupFeatures() {
+            showStatus('popupStatus', 'Testing popup features...', 'info');
+            setTimeout(() => {
+                showStatus('popupStatus', 
+                    '✅ Popup features to test:\n' +
+                    '• Wallet connection status\n' +
+                    '• Balance display\n' +
+                    '• Modern UI design\n' +
+                    '• Dark mode support', 'success');
+            }, 1000);
+        }
+
+        function testContentScript() {
+            showStatus('contentStatus', 'Testing content script...', 'info');
+            try {
+                // Test text selection and analysis
+                const sampleText = document.querySelector('.crypto-text').textContent;
+                chrome.runtime.sendMessage({
+                    action: 'analyzeText',
+                    text: sampleText
+                }, (response) => {
+                    if (response?.success) {
+                        showStatus('contentStatus', '✅ Content script analysis successful', 'success');
+                    } else {
+                        showStatus('contentStatus', `⚠️ Analysis result: ${response?.error || 'Unknown'}`, 'warning');
+                    }
+                });
+            } catch (error) {
+                showStatus('contentStatus', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        function toggleLensMode() {
+            showStatus('contentStatus', 'Toggling lens mode...', 'info');
+            try {
+                chrome.runtime.sendMessage({action: 'toggleLensMode'}, (response) => {
+                    if (response?.success) {
+                        showStatus('contentStatus', '✅ Lens mode toggled (Ctrl+Shift+L)', 'success');
+                    } else {
+                        showStatus('contentStatus', '⚠️ Lens mode toggle may not be available', 'warning');
+                    }
+                });
+            } catch (error) {
+                showStatus('contentStatus', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        function testOCR() {
+            showStatus('ocrStatus', 'Testing OCR capabilities...', 'info');
+            try {
+                chrome.runtime.sendMessage({action: 'testOCR'}, (response) => {
+                    if (response?.success) {
+                        showStatus('ocrStatus', '✅ OCR test initiated - check console for results', 'success');
+                    } else {
+                        showStatus('ocrStatus', '⚠️ OCR may not be available in this context', 'warning');
+                    }
+                });
+            } catch (error) {
+                showStatus('ocrStatus', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        function scanPage() {
+            showStatus('ocrStatus', 'Scanning page for crypto images...', 'info');
+            try {
+                chrome.runtime.sendMessage({action: 'scanPageForCrypto'}, (response) => {
+                    if (response?.success) {
+                        showStatus('ocrStatus', 
+                            `✅ Page scan complete:\n` +
+                            `Images found: ${response.imagesFound || 0}\n` +
+                            `Crypto content: ${response.cryptoImages || 0}`, 'success');
+                    } else {
+                        showStatus('ocrStatus', `⚠️ Scan error: ${response?.error || 'Unknown'}`, 'warning');
+                    }
+                });
+            } catch (error) {
+                showStatus('ocrStatus', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        function testScoutAPI() {
+            showStatus('apiStatus', 'Testing Scout API connection...', 'info');
+            try {
+                chrome.runtime.sendMessage({
+                    action: 'getTokenData',
+                    symbol: 'SOL'
+                }, (response) => {
+                    if (response?.success) {
+                        showStatus('apiStatus', 
+                            `✅ Scout API working:\n` +
+                            `Token: ${response.data?.token?.name || 'SOL'}\n` +
+                            `Price: $${response.data?.price || 'Unknown'}`, 'success');
+                    } else {
+                        showStatus('apiStatus', `⚠️ API error: ${response?.error || 'Unknown'}`, 'warning');
+                    }
+                });
+            } catch (error) {
+                showStatus('apiStatus', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        function getTokenPrices() {
+            showStatus('apiStatus', 'Fetching token prices...', 'info');
+            const tokens = ['SOL', 'JUP', 'BONK'];
+            let results = [];
+            
+            tokens.forEach(token => {
+                chrome.runtime.sendMessage({
+                    action: 'getTokenData',
+                    symbol: token
+                }, (response) => {
+                    results.push(`${token}: $${response?.data?.price || 'N/A'}`);
+                    if (results.length === tokens.length) {
+                        showStatus('apiStatus', `✅ Token prices:\n${results.join('\n')}`, 'success');
+                    }
+                });
+            });
+        }
+
+        function testDesignSystem() {
+            showStatus('designStatus', 'Testing design system...', 'info');
+            setTimeout(() => {
+                showStatus('designStatus', 
+                    '✅ Design system features:\n' +
+                    '• Geist font family\n' +
+                    '• CSS variables & design tokens\n' +
+                    '• Sharp corners (no border-radius)\n' +
+                    '• Consistent spacing\n' +
+                    '• Dark mode support\n' +
+                    '• Responsive design', 'success');
+            }, 1000);
+        }
+
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+            showStatus('designStatus', 
+                `✅ Dark mode ${document.documentElement.classList.contains('dark') ? 'enabled' : 'disabled'}`, 
+                'success');
+        }
+
+        function testImageOCR(image) {
+            showStatus('ocrStatus', 'Testing OCR on sample image...', 'info');
+            try {
+                chrome.runtime.sendMessage({
+                    action: 'performLensAnalysis',
+                    imageData: image.src
+                }, (response) => {
+                    if (response?.success) {
+                        showStatus('ocrStatus', '✅ Image OCR analysis initiated', 'success');
+                    } else {
+                        showStatus('ocrStatus', '⚠️ OCR analysis may not be available', 'warning');
+                    }
+                });
+            } catch (error) {
+                showStatus('ocrStatus', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        function showStatus(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.style.display = 'block';
+                element.textContent = message;
+                element.className = `results status-${type}`;
+                
+                // Auto-hide after 10 seconds
+                setTimeout(() => {
+                    if (element.textContent === message) {
+                        element.style.display = 'none';
+                    }
+                }, 10000);
+            }
+            
+            console.log(`${type.toUpperCase()}: ${message}`);
+        }
+
+        // Initialize test page
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('✅ Final Integration Test Page Ready');
+            
+            // Test if extension context is available
+            if (typeof chrome !== 'undefined' && chrome.runtime) {
+                console.log('✅ Chrome extension context available');
+                showStatus('designStatus', '✅ Extension context loaded successfully', 'success');
+            } else {
+                console.warn('⚠️ Chrome extension context not available');
+                showStatus('designStatus', '⚠️ Extension context not available - load as extension', 'warning');
+            }
+        });
+    </script>
+</body>
+</html>

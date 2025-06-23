@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scout Backend Debug Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 10px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #0070f3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0051cc; }
+        .result {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+        }
+        .success { border-left: 4px solid #28a745; }
+        .error { border-left: 4px solid #dc3545; }
+        .info { border-left: 4px solid #17a2b8; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Scout Backend Debug Test</h1>
+    <p>This page tests the Scout extension's ability to connect to the backend API at http://localhost:3001</p>
+
+    <div class="test-card">
+        <h3>1. Health Check Test</h3>
+        <button onclick="testHealthEndpoint()">Test Health Endpoint</button>
+        <div id="healthResult" class="result"></div>
+    </div>
+
+    <div class="test-card">
+        <h3>2. Analysis API Test</h3>
+        <button onclick="testAnalysisAPI()">Test Analysis API</button>
+        <div id="analysisResult" class="result"></div>
+    </div>
+
+    <div class="test-card">
+        <h3>3. Extension Content Script Test</h3>
+        <button onclick="testExtensionAnalysis()">Test via Extension</button>
+        <div id="extensionResult" class="result"></div>
+        <p><strong>Test text:</strong> "Check out this new token KAITO on Solana, great potential!"</p>
+    </div>
+
+    <div class="test-card">
+        <h3>4. CORS and Permissions Test</h3>
+        <button onclick="testCORS()">Test CORS</button>
+        <div id="corsResult" class="result"></div>
+    </div>
+
+    <script>
+        // Test health endpoint
+        async function testHealthEndpoint() {
+            const resultDiv = document.getElementById('healthResult');
+            resultDiv.className = 'result info';
+            resultDiv.textContent = 'Testing health endpoint...';
+
+            try {
+                const response = await fetch('http://localhost:3001/health', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                resultDiv.className = 'result success';
+                resultDiv.textContent = `✅ SUCCESS\nStatus: ${response.status}\nResponse: ${JSON.stringify(data, null, 2)}`;
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ ERROR\n${error.message}\n\nDetails: ${error.stack}`;
+            }
+        }
+
+        // Test analysis API
+        async function testAnalysisAPI() {
+            const resultDiv = document.getElementById('analysisResult');
+            resultDiv.className = 'result info';
+            resultDiv.textContent = 'Testing analysis API...';
+
+            try {
+                const testData = {
+                    message: "Check out this new token KAITO on Solana, great potential!"
+                };
+
+                const response = await fetch('http://localhost:3001/api/process', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(testData)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                resultDiv.className = 'result success';
+                resultDiv.textContent = `✅ SUCCESS\nStatus: ${response.status}\nResponse: ${JSON.stringify(data, null, 2)}`;
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ ERROR\n${error.message}\n\nDetails: ${error.stack}`;
+            }
+        }
+
+        // Test extension content script analysis
+        async function testExtensionAnalysis() {
+            const resultDiv = document.getElementById('extensionResult');
+            resultDiv.className = 'result info';
+            resultDiv.textContent = 'Testing via extension content script...';
+
+            try {
+                // Simulate text selection and analysis
+                const testText = "Check out this new token KAITO on Solana, great potential!";
+                
+                // Check if content script is loaded
+                if (typeof window.performAnalysis === 'function') {
+                    await window.performAnalysis(testText);
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = '✅ Extension analysis triggered successfully';
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = '❌ Extension content script not loaded or performAnalysis function not available';
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ ERROR\n${error.message}`;
+            }
+        }
+
+        // Test CORS
+        async function testCORS() {
+            const resultDiv = document.getElementById('corsResult');
+            resultDiv.className = 'result info';
+            resultDiv.textContent = 'Testing CORS configuration...';
+
+            try {
+                // Test preflight request
+                const response = await fetch('http://localhost:3001/api/process', {
+                    method: 'OPTIONS',
+                    headers: {
+                        'Origin': window.location.origin,
+                        'Access-Control-Request-Method': 'POST',
+                        'Access-Control-Request-Headers': 'Content-Type'
+                    }
+                });
+
+                const corsHeaders = {
+                    'Access-Control-Allow-Origin': response.headers.get('Access-Control-Allow-Origin'),
+                    'Access-Control-Allow-Methods': response.headers.get('Access-Control-Allow-Methods'),
+                    'Access-Control-Allow-Headers': response.headers.get('Access-Control-Allow-Headers')
+                };
+
+                resultDiv.className = 'result success';
+                resultDiv.textContent = `✅ CORS Test Results\nStatus: ${response.status}\nCORS Headers: ${JSON.stringify(corsHeaders, null, 2)}`;
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ CORS ERROR\n${error.message}`;
+            }
+        }
+
+        // Auto-run tests on page load
+        window.addEventListener('load', () => {
+            console.log('🔍 Scout Backend Debug Test loaded');
+            
+            // Log current page context
+            console.log('Page URL:', window.location.href);
+            console.log('User Agent:', navigator.userAgent);
+            
+            // Check if running in extension context
+            if (chrome && chrome.runtime) {
+                console.log('✅ Running in Chrome extension context');
+            } else {
+                console.log('⚠️ Not running in Chrome extension context');
+            }
+        });
+    </script>
+</body>
+</html>

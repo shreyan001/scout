@@ -1,12 +1,13 @@
-import express, { Request, Response } from 'express';
+import express, { Request, Response, Express } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { createSimpleGraph } from './ai/simple-graph';
+import { scoutGraph } from './ai/multi-node-graph';
+import { HumanMessage } from '@langchain/core/messages';
 
 // Load environment variables
 dotenv.config();
 
-const app = express();
+const app: Express = express();
 const port = process.env.PORT || 3001;
 
 // Middleware
@@ -26,15 +27,13 @@ app.post('/api/process', async (req: Request, res: Response): Promise<void> => {
     if (!message) {
       res.status(400).json({ error: 'Message is required' });
       return;
-    }
-
-    // Create graph instance
-    const graph = createSimpleGraph();
+    }    // Create graph instance - use the multi-node scout graph
+    const graph = scoutGraph;
 
     // Process the message through the graph
     const result = await graph.invoke({
       input: message,
-      extensionData: data || null
+      messages: [new HumanMessage(message)],
     });
 
     res.json({
@@ -73,15 +72,13 @@ app.post('/api/stream', async (req: Request, res: Response): Promise<void> => {
 
     const sendEvent = (data: any) => {
       res.write(`data: ${JSON.stringify(data)}\n\n`);
-    };
-
-    try {
-      const graph = createSimpleGraph();
+    };    try {
+      const graph = scoutGraph;
       
       // Stream the graph execution
       const stream = await graph.stream({
         input: message,
-        extensionData: data || null
+        messages: [new HumanMessage(message)],
       });
 
       for await (const chunk of stream) {
@@ -106,7 +103,7 @@ app.post('/api/stream', async (req: Request, res: Response): Promise<void> => {
   }
 });
 
-// Start server
+// Start serveryy
 app.listen(port, () => {
   console.log(`🚀 LangGraph Backend Server running on port ${port}`);
   console.log(`📡 Health check: http://localhost:${port}/health`);
