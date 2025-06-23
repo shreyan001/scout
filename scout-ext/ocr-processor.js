@@ -3,7 +3,7 @@
 
 class ScoutOCRProcessor {
   constructor() {
-    this.backendUrl = 'http://localhost:3001/api/process';
+    this.backendUrl = 'https://scout-backend-production.up.railway.app/api/process';
     this.isProcessing = false;
     console.log('🔍 Scout OCR Processor initialized');
   }
@@ -409,7 +409,7 @@ class ScoutOCRProcessor {
   // Check if backend is available
   async checkBackendHealth() {
     try {
-      const response = await fetch('http://localhost:3001/health');
+      const response = await fetch('https://scout-backend-production.up.railway.app/health');
       const data = await response.json();
       return data.status === 'OK';
     } catch (error) {

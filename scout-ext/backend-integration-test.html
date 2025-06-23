@@ -36,7 +36,7 @@
     <div class="test-area">
         <h2>Instructions</h2>
         <ol>
-            <li>Make sure your Scout backend server is running on http://localhost:3001</li>
+            <li>Make sure your Scout backend server is running on https://scout-backend-production.up.railway.app</li>
             <li>Load this extension in Chrome</li>
             <li>Right-click on the crypto text above and select "🚀 Analyze with Scout AI"</li>
             <li>Or select text and use Ctrl+Shift+L to activate lens mode</li>
@@ -50,7 +50,7 @@
             resultDiv.innerHTML = 'Testing...';
             
             try {
-                const response = await fetch('http://localhost:3001/health');
+                const response = await fetch('https://scout-backend-production.up.railway.app/health');
                 const data = await response.json();
                 resultDiv.innerHTML = `<strong>✅ Success:</strong> ${JSON.stringify(data, null, 2)}`;
                 resultDiv.style.color = 'green';
@@ -65,7 +65,7 @@
             resultDiv.innerHTML = 'Testing...';
             
             try {
-                const response = await fetch('http://localhost:3001/api/process', {
+                const response = await fetch('https://scout-backend-production.up.railway.app/api/process', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -85,7 +85,7 @@
         // Log when extension content script is available
         console.log('🧪 Scout backend integration test page loaded');
         console.log('📋 Instructions:');
-        console.log('1. Make sure backend server is running on http://localhost:3001');
+        console.log('1. Make sure backend server is running on https://scout-backend-production.up.railway.app');
         console.log('2. Right-click on crypto text and select Scout AI analysis');
         console.log('3. Check browser console for detailed logs');
     </script>

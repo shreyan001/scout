@@ -801,7 +801,7 @@ function positionOverlay(event) {
 // Perform AI analysis of the text
 // Scout Backend API Configuration - Easy to change for deployment
 const SCOUT_BACKEND = {
-  baseURL: 'http://localhost:3001', // Change this for production deployment
+  baseURL: 'https://scout-backend-production.up.railway.app', // Change this for production deployment
   timeout: 7000, // 7 seconds to handle slow responses
   retryAttempts: 1, // Single attempt for fast response
   retryDelay: 500

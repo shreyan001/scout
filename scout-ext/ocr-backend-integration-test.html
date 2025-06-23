@@ -134,7 +134,7 @@
             status.textContent = '🔄 Testing backend API...';
             
             try {
-                const response = await fetch('http://localhost:3001/api/process', {
+                const response = await fetch('https://scout-backend-production.up.railway.app/api/process', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -232,7 +232,7 @@
                 <h2>System Status</h2>
                 <p>Scout OCR Processor: ${window.ScoutOCRProcessor ? '✅ Available' : '❌ Not Available'}</p>
                 <p>Scout OCR Integration: ${window.ScoutOCR ? '✅ Available' : '❌ Not Available'}</p>
-                <p>Backend URL: http://localhost:3001/api/process</p>
+                <p>Backend URL: https://scout-backend-production.up.railway.app/api/process</p>
             `;
             document.body.appendChild(systemStatus);
         });

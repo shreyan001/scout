@@ -14,7 +14,7 @@
 - **Typography**: Uppercase, bold, letter-spacing for modern look
 
 ### 3. Backend Integration - WORKING ✅
-- Content script properly calls `http://localhost:3001/api/process`
+- Content script properly calls `https://scout-backend-production.up.railway.app/api/process`
 - OCR extracted text is sent to backend for analysis
 - Results displayed in overlay with backend analysis
 - Error handling for offline backend scenarios
@@ -29,7 +29,7 @@
 
 ### Backend API Test:
 ```powershell
-Invoke-WebRequest -Uri "http://localhost:3001/api/process" -Method POST -Headers @{"Content-Type"="application/json"} -Body '{"message":"SOL BONK test"}'
+Invoke-WebRequest -Uri "https://scout-backend-production.up.railway.app/api/process" -Method POST -Headers @{"Content-Type"="application/json"} -Body '{"message":"SOL BONK test"}'
 ```
 
 ## 📋 FILES UPDATED
@@ -59,7 +59,7 @@ Invoke-WebRequest -Uri "http://localhost:3001/api/process" -Method POST -Headers
 
 ## 🚨 IMPORTANT NOTES
 
-- Backend server must be running on `http://localhost:3001`
+- Backend server must be running on `https://scout-backend-production.up.railway.app`
 - Extension requires "Developer mode" enabled in Chrome
 - OCR functionality works with content scripts on all websites
 - Backend integration is fully functional and tested

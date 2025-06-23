@@ -8,7 +8,7 @@ The Scout Chrome extension now properly integrates OCR analysis with your backen
 
 1. **User triggers OCR** (via lens mode or image click)
 2. **Text is extracted** from the image using OCR
-3. **Text is sent to backend** at `http://localhost:3001/api/process`
+3. **Text is sent to backend** at `https://scout-backend-production.up.railway.app/api/process`
 4. **Backend analyzes** the text and returns token/contract/wallet data
 5. **Results are displayed** in a styled overlay showing all detected entities
 
@@ -63,7 +63,7 @@ Your backend should return this structure:
 ## 🧪 Testing
 
 1. **Load the extension** in Chrome
-2. **Start your backend** on `http://localhost:3001`
+2. **Start your backend** on `https://scout-backend-production.up.railway.app`
 3. **Open test page**: `ocr-backend-integration-test.html`
 4. **Click "Test OCR + Backend"** to verify integration
 5. **Use lens mode** on any webpage with crypto images

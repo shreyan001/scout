@@ -60,7 +60,7 @@
     <div class="test-section">
         <h2>Instructions</h2>
         <ol>
-            <li><strong>Start Backend:</strong> Make sure your Scout backend server is running on <code>http://localhost:3001</code></li>
+            <li><strong>Start Backend:</strong> Make sure your Scout backend server is running on <code>https://scout-backend-production.up.railway.app</code></li>
             <li><strong>Load Extension:</strong> Install the Scout extension in Chrome</li>
             <li><strong>Test OCR:</strong> Right-click on crypto images above → "🚀 Analyze with Scout AI"</li>
             <li><strong>Test Lens Mode:</strong> Press <code>Ctrl+Shift+L</code> to activate lens mode, then click on images</li>
@@ -117,7 +117,7 @@
             resultDiv.innerHTML = 'Analyzing text...';
             
             try {
-                const response = await fetch('http://localhost:3001/api/process', {
+                const response = await fetch('https://scout-backend-production.up.railway.app/api/process', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ message: text })
@@ -149,7 +149,7 @@
             resultDiv.innerHTML = 'Testing backend health...';
             
             try {
-                const response = await fetch('http://localhost:3001/health');
+                const response = await fetch('https://scout-backend-production.up.railway.app/health');
                 const data = await response.json();
                 
                 if (data.status === 'OK') {
@@ -164,7 +164,7 @@
             } catch (error) {
                 resultDiv.innerHTML = `
                     <div class="status error">❌ Backend Connection Failed</div>
-                    <p>Make sure your Scout backend server is running on http://localhost:3001</p>
+                    <p>Make sure your Scout backend server is running on https://scout-backend-production.up.railway.app</p>
                     <p>Error: ${error.message}</p>
                 `;
             }

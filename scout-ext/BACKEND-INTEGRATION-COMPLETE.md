@@ -9,7 +9,7 @@ Updated Scout Chrome Extension to use the new backend API instead of local AI an
 
 #### Modified Functions:
 - **`initializeOCR()`**: Removed AI analyzer initialization, now only loads OCR
-- **`performAnalysis(text)`**: Completely replaced to call backend API at `http://localhost:3001/api/process`
+- **`performAnalysis(text)`**: Completely replaced to call backend API at `https://scout-backend-production.up.railway.app/api/process`
 
 #### New Functions Added:
 - **`displayBackendAnalysisResults(backendResult, originalText)`**: Displays rich analysis from backend
@@ -17,7 +17,7 @@ Updated Scout Chrome Extension to use the new backend API instead of local AI an
 - **`copyAnalysisResults()`**: Allows users to copy analysis results to clipboard
 
 ### 2. Manifest Updates (`manifest.json`)
-- Added `http://localhost:3001/*` to host permissions
+- Added `https://scout-backend-production.up.railway.app/*` to host permissions
 - Added `https://api.nodit.io/*` for Nodit MCP integration
 
 ### 3. CSS Styling (`content.css`)
@@ -33,7 +33,7 @@ Updated Scout Chrome Extension to use the new backend API instead of local AI an
 
 ### API Endpoint Used:
 ```
-POST http://localhost:3001/api/process
+POST https://scout-backend-production.up.railway.app/api/process
 Content-Type: application/json
 
 {
@@ -98,7 +98,7 @@ Content-Type: application/json
 
 1. User selects text or uses lens mode
 2. Content script calls `performAnalysis(text)`
-3. Function makes POST request to `http://localhost:3001/api/process`
+3. Function makes POST request to `https://scout-backend-production.up.railway.app/api/process`
 4. Backend responds with Web3 analysis data
 5. `displayBackendAnalysisResults()` renders rich UI
 6. User can interact with results (copy, close, etc.)
@@ -106,7 +106,7 @@ Content-Type: application/json
 ## 🧪 Testing
 
 ### Test Steps:
-1. Start your backend server on `http://localhost:3001`
+1. Start your backend server on `https://scout-backend-production.up.railway.app`
 2. Load extension in Chrome
 3. Open `backend-integration-test.html`
 4. Click "Test Backend Health" button

@@ -218,7 +218,7 @@ class ScoutOCRIntegration {
   // Check backend availability
   async checkBackend() {
     try {
-      const response = await fetch('http://localhost:3001/api/process', {
+      const response = await fetch('https://scout-backend-production.up.railway.app/api/process', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
